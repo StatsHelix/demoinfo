@@ -95,6 +95,7 @@
     <Compile Include="DP\FastNetmessages\UpdateStringTable.cs" />
     <Compile Include="DP\FastNetmessages\SendTable.cs" />
     <Compile Include="Messages\EnumConstants.cs" />
+    <Compile Include="DP\FieldIndexStore.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

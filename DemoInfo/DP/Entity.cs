@@ -35,167 +35,19 @@ namespace DemoInfo.DP
 
 		public void ApplyUpdate(IBitStream reader)
 		{
-			List<int> backup = null;
+			var props = this.Props;
+
 			bool newWay = reader.ReadBit();
 
-			int x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA;
-			var props = this.Props;
-			if (props == null)
-				throw new NullReferenceException();
+			FieldIndexQueue fq = new FieldIndexQueue ();
 
-			x0 = ReadFieldIndex(reader, -1, newWay);
-			if (x0 < 0)
-				goto Read0;
-
-			x1 = ReadFieldIndex(reader, x0, newWay);
-			if (x1 < 0) {
-				xA = x0;
-				goto Read1;
-			}
-
-			x2 = ReadFieldIndex(reader, x1, newWay);
-			if (x2 < 0) {
-				x9 = x0;
-				xA = x1;
-				goto Read2;
-			}
-
-			x3 = ReadFieldIndex(reader, x2, newWay);
-			if (x3 < 0) {
-				x8 = x0;
-				x9 = x1;
-				xA = x2;
-				goto Read3;
-			}
-
-			x4 = ReadFieldIndex(reader, x3, newWay);
-			if (x4 < 0) {
-				x7 = x0;
-				x8 = x1;
-				x9 = x2;
-				xA = x3;
-				goto Read4;
-			}
-
-			x5 = ReadFieldIndex(reader, x4, newWay);
-			if (x5 < 0) {
-				x6 = x0;
-				x7 = x1;
-				x8 = x2;
-				x9 = x3;
-				xA = x4;
-				goto Read5;
-			}
-
-			x6 = ReadFieldIndex(reader, x5, newWay);
-			if (x6 < 0) {
-				int bx5 = x5;
-				x5 = x0;
-				x6 = x1;
-				x7 = x2;
-				x8 = x3;
-				x9 = x4;
-				xA = bx5;
-				goto Read6;
-			}
-
-			x7 = ReadFieldIndex(reader, x6, newWay);
-			if (x7 < 0) {
-				int bx4 = x4, bx5 = x5, bx6 = x6;
-				x4 = x0;
-				x5 = x1;
-				x6 = x2;
-				x7 = x3;
-				x8 = bx4;
-				x9 = bx5;
-				xA = bx6;
-				goto Read7;
-			}
-
-			x8 = ReadFieldIndex(reader, x7, newWay);
-			if (x8 < 0) {
-				int bx3 = x3, bx4 = x4, bx5 = x5, bx6 = x6, bx7 = x7;
-				x3 = x0;
-				x4 = x1;
-				x5 = x2;
-				x6 = bx3;
-				x7 = bx4;
-				x8 = bx5;
-				x9 = bx6;
-				xA = bx7;
-				goto Read8;
-			}
-
-			x9 = ReadFieldIndex(reader, x8, newWay);
-			if (x9 < 0) {
-				int bx2 = x2, bx3 = x3, bx4 = x4, bx5 = x5, bx6 = x6, bx7 = x7, bx8 = x8;
-				x2 = x0;
-				x3 = x1;
-				x4 = bx2;
-				x5 = bx3;
-				x6 = bx4;
-				x7 = bx5;
-				x8 = bx6;
-				x9 = bx7;
-				xA = bx8;
-				goto Read9;
-			}
-
-			xA = ReadFieldIndex(reader, x9, newWay);
-			if (xA < 0) {
-				int bx1 = x1, bx2 = x2, bx3 = x3, bx4 = x4, bx5 = x5, bx6 = x6, bx7 = x7, bx8 = x8, bx9 = x9;
-				x1 = x0;
-				x2 = bx1;
-				x3 = bx2;
-				x4 = bx3;
-				x5 = bx4;
-				x6 = bx5;
-				x7 = bx6;
-				x8 = bx7;
-				x9 = bx8;
-				xA = bx9;
-				goto ReadA;
-			}
-
-
-			/*int i, index = -1;
-			int* entries = stackalloc int[16];
-			for (i = 0; i < 16; i++)
-				if (-1 == (entries[i] = ))
-					break;*/
-
-			var index = xA;
-			backup = new List<int>();
+			int index = -1;
 			while ((index = ReadFieldIndex(reader, index, newWay)) != -1)
-				backup.Add(index);
+				fq.PushValue(index);
 
-			props[x0].Decode(reader, this);
-		ReadA:
-			props[x1].Decode(reader, this);
-		Read9:
-			props[x2].Decode(reader, this);
-		Read8:
-			props[x3].Decode(reader, this);
-		Read7:
-			props[x4].Decode(reader, this);
-		Read6:
-			props[x5].Decode(reader, this);
-		Read5:
-			props[x6].Decode(reader, this);
-		Read4:
-			props[x7].Decode(reader, this);
-		Read3:
-			props[x8].Decode(reader, this);
-		Read2:
-			props[x9].Decode(reader, this);
-		Read1:
-			props[xA].Decode(reader, this);
-		Read0:
-
-			if (backup != null)
-				for (int j = 0; j < backup.Count; j++)
-					props[backup[j]].Decode(reader, this);
-
+			for (int i = 0; i < fq.Count; i++) {
+				props [fq.GetValue (i)].Decode (reader, this);
+			}
 			return;
 		}
 
