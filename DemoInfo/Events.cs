@@ -146,6 +146,7 @@ namespace DemoInfo
 		internal int AmmoType { get; set; }
 
 		public Player Owner { get; set; }
+		public Player LastOwner { get; set; }
 
 		public int ReserveAmmo {
 			get {

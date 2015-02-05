@@ -231,9 +231,19 @@ namespace DemoInfo.DP.Handler
 		{
 			var nade = new T();
 
-			if (data.ContainsKey("userid") && parser.Players.ContainsKey((int)data["userid"]))
-				nade.ThrownBy = parser.Players[(int)data["userid"]];
-				
+			var nadeEntity = parser.projectiles [(int)data ["entityid"]];
+
+			#if DEBUG
+			if (data.ContainsKey ("userid") && parser.Players.ContainsKey ((int)data ["userid"])) {
+				nade.ThrownBy = parser.Players [(int)data ["userid"]];
+
+				if(nade.ThrownBy != nadeEntity.Owner)
+					throw new Exception("The mapping of the projectile-owner to the player is invalid. ");
+			}
+			#endif
+
+			nade.ThrownBy = nadeEntity.Owner;
+
 			Vector vec = new Vector();
 			vec.X = (float)data["x"];
 			vec.Y = (float)data["y"];

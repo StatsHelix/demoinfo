@@ -246,7 +246,7 @@ namespace DemoInfo
 		/// An map entity <-> weapon. Used to remember whether a weapon is a p250, 
 		/// how much ammonition it has, etc. 
 		/// </summary>
-		Equipment[] weapons = new Equipment[1024];
+		internal Equipment[] weapons = new Equipment[MAX_ENTITIES];
 
 		/// <summary>
 		/// The indicies of the bombsites - useful to find out
@@ -320,6 +320,7 @@ namespace DemoInfo
 		/// </summary>
 		internal Dictionary<int, object[]> PreprocessedBaselines = new Dictionary<int, object[]>();
 
+
 		/// <summary>
 		/// The instance baselines. 
 		/// When a new edict is created one would need to send all the information twice. 
@@ -370,6 +371,11 @@ namespace DemoInfo
 		/// This is networked seperately from the player, so we need to cache it somewhere else.
 		/// </summary>
 		private AdditionalPlayerInformation[] additionalInformations = new AdditionalPlayerInformation[MAXPLAYERS];
+
+		/// <summary>
+		/// The projectiles currently flying around. This is important since a Projectile has a m_hThrower, and this is cool for molotovs. 
+		/// </summary>
+		internal Projectile[] projectiles = new Projectile[MAX_ENTITIES];
 
 		/// <summary>
 		/// Initializes a new DemoParser. Right point if you want to start analyzing demos. 
@@ -546,6 +552,8 @@ namespace DemoInfo
 			HandlePlayers();
 
 			HandleWeapons ();
+
+			HandleProjectiles ();
 		}
 
 		private void HandleTeamScores()
@@ -836,6 +844,7 @@ namespace DemoInfo
 		{
 			var weapon = weapons[weaponEntityIndex];
 			weapon.Owner = p;
+			weapon.LastOwner = p;
 			p.rawWeapons [weaponEntityIndex] = weapon;
 
 			return true;
@@ -843,7 +852,7 @@ namespace DemoInfo
 
 		void HandleWeapons ()
 		{
-			for (int i = 0; i < 1024; i++) {
+			for (int i = 0; i < MAX_ENTITIES; i++) {
 				weapons [i] = new Equipment ();
 			}
 
@@ -854,6 +863,10 @@ namespace DemoInfo
 
 		void HandleWeapon (object sender, EntityCreatedEventArgs e)
 		{
+			e.Entity.EntityLeft += (deletedEntity, left) => {
+				weapons[left.Entity.ID] = new Equipment();
+			};
+
 			var equipment = weapons [e.Entity.ID];
 			equipment.EntityID = e.Entity.ID;
 			equipment.Weapon = equipmentMapping [e.Class];
@@ -903,6 +916,23 @@ namespace DemoInfo
 						throw new InvalidDataException("Unknown weapon model");
 				};
 			}
+		}
+
+		void HandleProjectiles ()
+		{
+			//m_hThrower
+			SendTableParser.FindByName ("CBaseCSGrenadeProjectile").OnNewEntity += HandleNewProjectile;
+			SendTableParser.FindByName ("CDecoyProjectile").OnNewEntity += HandleNewProjectile;
+		}
+
+		private void HandleNewProjectile(object sender_, EntityCreatedEventArgs newEntity)
+		{
+			projectiles[newEntity.Entity.ID] = new Projectile();
+			newEntity.Entity.FindProperty("m_hThrower").IntRecived += (sender, e) => {
+				projectiles[e.Entity.ID].Owner = PlayerInformations[(e.Value & INDEX_MASK) - 1];
+				projectiles[e.Entity.ID].OwnerID = e.Value & INDEX_MASK;
+			};
+			newEntity.Entity.EntityLeft += (sender, e) => projectiles[e.Entity.ID] = null;
 		}
 
 		internal List<BoundingBoxInformation> triggers = new List<BoundingBoxInformation>();

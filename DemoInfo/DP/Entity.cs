@@ -9,13 +9,15 @@ using System.Threading.Tasks;
 
 namespace DemoInfo.DP
 {
-	internal class Entity
+	class Entity
 	{
 		public int ID { get; set; }
 
 		public ServerClass ServerClass { get; set; }
 
 		public PropertyEntry[] Props { get; private set; }
+
+		public event EventHandler<EntityLeftPVSEventArgs> EntityLeft;
 
 		public Entity(int id, ServerClass serverClass)
 		{
@@ -42,7 +44,6 @@ namespace DemoInfo.DP
 			//Okay, how does an entity-update look like?
 			//First a list of the updated props is sent
 			//And then the props itself are sent.
-
 
 			//Read the field-indicies in a "new" way?
 			bool newWay = reader.ReadBit();
@@ -94,10 +95,11 @@ namespace DemoInfo.DP
 
 		public void Leave ()
 		{
+			if(EntityLeft != null)
+				EntityLeft (this, new EntityLeftPVSEventArgs (this));
+
 			foreach (var prop in Props)
 				prop.Destroy ();
-
-
 		}
 
 		public override string ToString()
@@ -371,7 +373,7 @@ namespace DemoInfo.DP
 		}
 	}
 
-	public class RecordedPropertyUpdate<T>
+	class RecordedPropertyUpdate<T>
 	{
 		public int PropIndex;
 		public T Value;
@@ -382,5 +384,16 @@ namespace DemoInfo.DP
 			Value = value;
 		}
 	}
+
+	class EntityLeftPVSEventArgs
+	{
+		public Entity Entity;
+
+		public EntityLeftPVSEventArgs (Entity entity)
+		{
+			this.Entity = entity;
+		}
+	}
+
 	#endregion
 }
