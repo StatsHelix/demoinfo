@@ -15,6 +15,6 @@ script:
   - python ci/brofiler.py verify
   - python ci/brofiler.py run
 after_success:
-  - [ "$TRAVIS_PULL_REQUEST" = "false" ] && [ "$TRAVIS_BRANCH" = "master" ] && sed -i "s/<\/version>/-ci$(date +%s)-$(git rev-parse --short HEAD)<\/version>/" DemoInfo.nuspec && nuget pack DemoInfo.nuspec && nuget setApiKey "$NUGET_APIKEY" && nuget push *.nupkg
+  - "[ \"$TRAVIS_PULL_REQUEST\" = \"false\" ] && [ \"$TRAVIS_BRANCH\" = \"master\" ] && sed -i \"s/<\\/version>/-ci$(date +%s)-$(git rev-parse --short HEAD)<\\/version>/\" DemoInfo.nuspec && nuget pack DemoInfo.nuspec && nuget setApiKey \"$NUGET_APIKEY\" && nuget push *.nupkg"
 after_script:
   - python ci/brofiler.py cleanup
