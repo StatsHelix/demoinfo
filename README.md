@@ -17,6 +17,11 @@ We now have an official nuget-package! See https://www.nuget.org/packages/DemoIn
 Refer to [this guide](https://github.com/moritzuehling/demostatistics-generator/blob/master/README.md#usage-of-demoinfo-public). There is also an example-project where you can see the parser in action!
 
 ##Features 
+###ToDo
+A list of which game-events are implemented and which aren't can be found [here](https://gist.github.com/moritzuehling/bcc71f306249f0d85628). 
+
+###Done
+
 * Get Informations about each player at any point in time: 
  * Name
  * SteamID
