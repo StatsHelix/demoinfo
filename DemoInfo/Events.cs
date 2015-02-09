@@ -38,6 +38,17 @@ namespace DemoInfo
 
 	}
 
+	public class RoundOfficiallyEndedEventArgs : EventArgs
+	{
+	}
+
+	public class RoundMVPEventArgs : EventArgs
+	{
+		public Player Player { get; set; }
+
+		public RoundMVPReason Reason  { get; set; }
+	}
+
 	public class RoundStartedEventArgs : EventArgs
 	{
 		public int TimeLimit  { get; set; }

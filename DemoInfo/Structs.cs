@@ -444,4 +444,11 @@ namespace DemoInfo
 		CTSurrender
 	};
 
+	public enum RoundMVPReason
+	{
+		MostEliminations = 1,
+		BombPlanted,
+		BombDefused
+	};
+
 }

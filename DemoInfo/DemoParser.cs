@@ -50,6 +50,16 @@ namespace DemoInfo
 		/// </summary>
 		public event EventHandler<RoundEndedEventArgs> RoundEnd;
 
+		/// <summary>
+		/// Occurs when round really ended
+		/// </summary>
+		public event EventHandler<RoundOfficiallyEndedEventArgs> RoundOfficiallyEnd;
+
+		/// <summary>
+		/// Occurs on round end with the MVP
+		/// </summary>
+		public event EventHandler<RoundMVPEventArgs> RoundMVP;
+
 
 		/// <summary>
 		/// Occurs when freezetime ended. Raised on "round_freeze_end" 
@@ -999,6 +1009,20 @@ namespace DemoInfo
 		{
 			if (RoundEnd != null)
 				RoundEnd(this, re);
+
+		}
+
+		internal void RaiseRoundOfficiallyEnd()
+		{
+			if (RoundOfficiallyEnd != null)
+				RoundOfficiallyEnd(this, new RoundOfficiallyEndedEventArgs());
+
+		}
+
+		internal void RaiseRoundMVP(RoundMVPEventArgs re)
+		{
+			if (RoundMVP != null)
+				RoundMVP(this, re);
 
 		}
 
