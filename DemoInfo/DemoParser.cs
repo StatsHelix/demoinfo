@@ -376,6 +376,12 @@ namespace DemoInfo
 		public int CurrentTick { get; private set; }
 
 		/// <summary>
+		/// The current ingame-tick as reported by the demo-file. 
+		/// </summary>
+		/// <value>The current tick.</value>
+		public int IngameTick { get; internal set; }
+
+		/// <summary>
 		/// How far we've advanced in the demo in seconds. 
 		/// </summary>
 		/// <value>The current time.</value>
