@@ -264,11 +264,11 @@ namespace DemoInfo
 		/// <summary>
 		/// The ID of the CT-Team
 		/// </summary>
-		int ctID = -1;
+		internal int ctID = -1;
 		/// <summary>
 		/// The ID of the terrorist team
 		/// </summary>
-		int tID = -1;
+		internal int tID = -1;
 
 		/// <summary>
 		/// The Rounds the Counter-Terrorists have won at this point.
@@ -988,17 +988,17 @@ namespace DemoInfo
 				MatchStarted(this, new MatchStartedEventArgs());
 		}
 
-		internal void RaiseRoundStart()
+		internal void RaiseRoundStart(RoundStartedEventArgs rs)
 		{
 			if (RoundStart != null)
-				RoundStart(this, new RoundStartedEventArgs());
+				RoundStart(this, rs);
 
 		}
 
-		internal void RaiseRoundEnd()
+		internal void RaiseRoundEnd(RoundEndedEventArgs re)
 		{
 			if (RoundEnd != null)
-				RoundEnd(this, new RoundEndedEventArgs());
+				RoundEnd(this, re);
 
 		}
 

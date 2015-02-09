@@ -23,15 +23,26 @@ namespace DemoInfo
 
     public class MatchStartedEventArgs : EventArgs
     {
-
 	}
 
 	public class RoundEndedEventArgs : EventArgs
 	{
+		public RoundEndReason Reason { get; set; }
+
+		public string Message { get; set; }
+
+		/// <summary>
+		/// The winning team. Spectate for everything that isn't CT or T. 
+		/// </summary>
+		public Team Winner;
+
 	}
 
 	public class RoundStartedEventArgs : EventArgs
 	{
+		public int TimeLimit  { get; set; }
+		public int FragLimit  { get; set; }
+		public string Objective { get; set; }
 	}
 
 	public class FreezetimeEndedEventArgs : EventArgs

@@ -34,16 +34,45 @@ namespace DemoInfo.DP.Handler
 			if (descriptors == null)
 				return;
 
+			Dictionary<string, object> data;
 			var eventDescriptor = descriptors[rawEvent.EventId];
 
 			if (parser.Players.Count == 0 && eventDescriptor.Name != "player_connect")
 				return;
 
-			if (eventDescriptor.Name == "round_start")
-				parser.RaiseRoundStart();
+			if (eventDescriptor.Name == "round_start") {
+				data = MapData (eventDescriptor, rawEvent);
 
-			if (eventDescriptor.Name == "round_end")
-				parser.RaiseRoundEnd ();
+				RoundStartedEventArgs rs = new RoundStartedEventArgs () { 
+					TimeLimit = (int)data["timelimit"],
+					FragLimit = (int)data["fraglimit"],
+					Objective = (string)data["objective"]
+				};
+
+				parser.RaiseRoundStart (rs);
+
+			}
+
+			if (eventDescriptor.Name == "round_end") {
+				data = MapData (eventDescriptor, rawEvent);
+
+				Team t = Team.Spectate;
+
+				int winner = (int)data ["winner"];
+
+				if (winner == parser.tID)
+					t = Team.Terrorist;
+				else if (winner == parser.ctID)
+					t = Team.CounterTerrorist;
+
+				RoundEndedEventArgs roundEnd = new RoundEndedEventArgs () {
+					Reason = (RoundEndReason)data["reason"],
+					Winner = t,
+					Message = (string)data["message"],
+				};
+
+				parser.RaiseRoundEnd (roundEnd);
+			}
 
 			if (eventDescriptor.Name == "begin_new_match")
 				parser.RaiseMatchStarted ();
@@ -55,7 +84,6 @@ namespace DemoInfo.DP.Handler
 			//	Console.WriteLine (eventDescriptor.Name);
 			//}
 
-			Dictionary<string, object> data;
 			switch (eventDescriptor.Name) {
 			case "weapon_fire":
 
