@@ -74,6 +74,19 @@ namespace DemoInfo.DP.Handler
 				parser.RaiseRoundEnd (roundEnd);
 			}
 
+			if (eventDescriptor.Name == "round_officially_ended")
+				parser.RaiseRoundOfficiallyEnd ();
+
+			if (eventDescriptor.Name == "round_mvp") {
+				data = MapData (eventDescriptor, rawEvent);
+			
+				RoundMVPEventArgs roundMVPArgs = new RoundMVPEventArgs();
+                roundMVPArgs.Player = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
+				roundMVPArgs.Reason = (RoundMVPReason)data["reason"];
+				
+				parser.RaiseRoundMVP (roundMVPArgs);
+			}
+
 			if (eventDescriptor.Name == "begin_new_match")
 				parser.RaiseMatchStarted ();
 
