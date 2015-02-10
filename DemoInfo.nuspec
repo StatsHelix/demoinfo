@@ -9,8 +9,8 @@
     <projectUrl>https://github.com/moritzuehling/demoinfo-public/</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>This is a C#-Library that makes reading CS:GO-Demos and analyzing them easier.</description>
-    <releaseNotes>Initial nuget release.</releaseNotes>
-    <tags>csgo demoinfo demoinfo-public</tags>
+    <releaseNotes>This is an automatic prerelease build of DemoInfo. The assembly is delay-signed (https://msdn.microsoft.com/en-us/library/t07a3dye.aspx), so the install script calls the Strong Name tool sn.exe to turn off verification for DemoInfo.dll. This means that an attacker could modify the assembly and it'll still show up as validly signed. Once you no longer need to use prereleases of DemoInfo on your machine, just run 'sn -Vu DemoInfo.dll' to close this security gap. If you copy the project to another machine, please either reinstall the package or run 'sn -Vr DemoInfo.dll' to manually add the assembly to the skip list. To clarify: None of this is relevant if you just use the normal releases as they carry a proper signature.</releaseNotes>
+    <tags>csgo demoinfo demoinfo-public demoinfogo</tags>
   </metadata>
   <files>
     <file src="DemoInfo/bin/Release/DemoInfo.dll" target="lib/net45" />
