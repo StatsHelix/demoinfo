@@ -1050,8 +1050,8 @@ namespace DemoInfo
 
 		internal void RaiseBotTakeOver(BotTakeOverEventArgs take)
 		{
-		if (BotTakeOver != null)
-			BotTakeOver(this, take);
+			if (BotTakeOver != null)
+				BotTakeOver(this, take);
 		}
 
 		internal void RaiseWeaponFired(WeaponFiredEventArgs fire)

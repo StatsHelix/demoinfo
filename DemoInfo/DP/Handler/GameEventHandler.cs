@@ -95,7 +95,7 @@ namespace DemoInfo.DP.Handler
 				botTakeOverArgs.Taker = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
 
 				parser.RaiseBotTakeOver(botTakeOverArgs);
-				}
+			}
 
 			if (eventDescriptor.Name == "begin_new_match")
 				parser.RaiseMatchStarted ();
