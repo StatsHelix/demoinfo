@@ -60,10 +60,10 @@ namespace DemoInfo
 		/// </summary>
 		public event EventHandler<RoundMVPEventArgs> RoundMVP;
 
-        /// <summary>
-        /// Occurs when a player take control of a bot
-        /// </summary>
-        public event EventHandler<BotTakeOverEventArgs> BotTakeOver;
+		/// <summary>
+		/// Occurs when a player take control of a bot
+		/// </summary>
+		public event EventHandler<BotTakeOverEventArgs> BotTakeOver;
 
 		/// <summary>
 		/// Occurs when freezetime ended. Raised on "round_freeze_end" 
@@ -1048,11 +1048,11 @@ namespace DemoInfo
 				PlayerKilled(this, kill);
 		}
 
-        internal void RaiseBotTakeOver(BotTakeOverEventArgs take)
-        {
-            if (BotTakeOver != null)
-                BotTakeOver(this, take);
-        }
+		internal void RaiseBotTakeOver(BotTakeOverEventArgs take)
+		{
+		if (BotTakeOver != null)
+			BotTakeOver(this, take);
+		}
 
 		internal void RaiseWeaponFired(WeaponFiredEventArgs fire)
 		{
