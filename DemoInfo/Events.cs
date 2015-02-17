@@ -75,6 +75,11 @@ namespace DemoInfo
 		public bool Headshot { get; internal set; }
 	}
 
+	public class BotTakeOverEventArgs : EventArgs
+	{
+		public Player Taker { get; internal set; }
+	}
+
 	public class WeaponFiredEventArgs : EventArgs
 	{
 		public Equipment Weapon { get; internal set; }
