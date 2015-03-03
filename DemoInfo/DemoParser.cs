@@ -50,6 +50,20 @@ namespace DemoInfo
 		/// </summary>
 		public event EventHandler<RoundEndedEventArgs> RoundEnd;
 
+		/// <summary>
+		/// Occurs when round really ended
+		/// </summary>
+		public event EventHandler<RoundOfficiallyEndedEventArgs> RoundOfficiallyEnd;
+
+		/// <summary>
+		/// Occurs on round end with the MVP
+		/// </summary>
+		public event EventHandler<RoundMVPEventArgs> RoundMVP;
+
+		/// <summary>
+		/// Occurs when a player take control of a bot
+		/// </summary>
+		public event EventHandler<BotTakeOverEventArgs> BotTakeOver;
 
 		/// <summary>
 		/// Occurs when freezetime ended. Raised on "round_freeze_end" 
@@ -264,11 +278,11 @@ namespace DemoInfo
 		/// <summary>
 		/// The ID of the CT-Team
 		/// </summary>
-		int ctID = -1;
+		internal int ctID = -1;
 		/// <summary>
 		/// The ID of the terrorist team
 		/// </summary>
-		int tID = -1;
+		internal int tID = -1;
 
 		/// <summary>
 		/// The Rounds the Counter-Terrorists have won at this point.
@@ -364,6 +378,12 @@ namespace DemoInfo
 		/// </summary>
 		/// <value>The current tick.</value>
 		public int CurrentTick { get; private set; }
+
+		/// <summary>
+		/// The current ingame-tick as reported by the demo-file. 
+		/// </summary>
+		/// <value>The current tick.</value>
+		public int IngameTick { get; internal set; }
 
 		/// <summary>
 		/// How far we've advanced in the demo in seconds. 
@@ -988,17 +1008,31 @@ namespace DemoInfo
 				MatchStarted(this, new MatchStartedEventArgs());
 		}
 
-		internal void RaiseRoundStart()
+		internal void RaiseRoundStart(RoundStartedEventArgs rs)
 		{
 			if (RoundStart != null)
-				RoundStart(this, new RoundStartedEventArgs());
+				RoundStart(this, rs);
 
 		}
 
-		internal void RaiseRoundEnd()
+		internal void RaiseRoundEnd(RoundEndedEventArgs re)
 		{
 			if (RoundEnd != null)
-				RoundEnd(this, new RoundEndedEventArgs());
+				RoundEnd(this, re);
+
+		}
+
+		internal void RaiseRoundOfficiallyEnd()
+		{
+			if (RoundOfficiallyEnd != null)
+				RoundOfficiallyEnd(this, new RoundOfficiallyEndedEventArgs());
+
+		}
+
+		internal void RaiseRoundMVP(RoundMVPEventArgs re)
+		{
+			if (RoundMVP != null)
+				RoundMVP(this, re);
 
 		}
 
@@ -1012,6 +1046,12 @@ namespace DemoInfo
 		{
 			if (PlayerKilled != null)
 				PlayerKilled(this, kill);
+		}
+
+		internal void RaiseBotTakeOver(BotTakeOverEventArgs take)
+		{
+			if (BotTakeOver != null)
+				BotTakeOver(this, take);
 		}
 
 		internal void RaiseWeaponFired(WeaponFiredEventArgs fire)

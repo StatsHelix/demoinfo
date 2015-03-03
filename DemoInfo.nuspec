@@ -14,5 +14,6 @@
   </metadata>
   <files>
     <file src="DemoInfo/bin/Release/DemoInfo.dll" target="lib/net45" />
+    <file src="DemoInfo/bin/Release/DemoInfo.xml" target="lib/net45" />
   </files>
 </package>
