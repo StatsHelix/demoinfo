@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Diagnostics;
 using System.Text;
+using DemoInfo.DP.Handler;
 
 namespace DemoInfo
 {
@@ -25,6 +26,7 @@ namespace DemoInfo
 		internal const int MAX_ENTITIES = ( ( 1 << MAX_EDICT_BITS ) );
 		const int MAXPLAYERS = 64;
 		const int MAXWEAPONS = 64;
+	    public Dictionary<int,Player> LastTickPlayers = new Dictionary<int, Player>();
 
 
 		#region Events
@@ -173,6 +175,10 @@ namespace DemoInfo
 		/// </summary>
 		public event EventHandler<BombDefuseEventArgs> BombAbortDefuse;
 
+        /// <summary>
+        /// Raised when an Item is Bought
+        /// </summary>
+        public event EventHandler<ItemBuyEventArgs> ItemBuy;
 		#endregion
 
 		/// <summary>
@@ -452,9 +458,14 @@ namespace DemoInfo
 			if (Header == null)
 				throw new InvalidOperationException ("You need to call ParseHeader first before you call ParseToEnd or ParseNextTick!");
 
+		    foreach (var playerEnt in Players)
+		    {
+                LastTickPlayers.Add(playerEnt.Key, playerEnt.Value.Copy()); 		        
+		    }
+
 			bool b = ParseTick();
-			
-			for (int i = 0; i < RawPlayers.Length; i++) {
+
+		    for (int i = 0; i < RawPlayers.Length; i++) {
 				if (RawPlayers[i] == null)
 					continue;
 
@@ -477,6 +488,48 @@ namespace DemoInfo
 					}
 				}
 			}
+
+            //Event that a Player bought an item
+            for (int i = 0; i < Players.Count; i++)
+            {
+                if (RawPlayers[i] == null)
+					continue;
+
+				var rawPlayer = RawPlayers[i];
+
+				int id = rawPlayer.UserID;
+
+                if (PlayerInformations[i] != null)
+                {
+                    if (Players.ContainsKey(id) && LastTickPlayers.ContainsKey(id))
+                    {
+                        //At the End of round Money goes up, at Buy and on TeamAttack/Hostage Attack it goes down
+                        //Problem is Iteamchange and Moneychange not in same Tick, but is that even possible?
+                        if (Players[id].Money < LastTickPlayers[id].Money && !Players[id].Weapons.Equals(LastTickPlayers[id].Weapons))
+                        {
+                            List<Equipment> boughtWeapons = new List<Equipment>();
+
+                            foreach (var newTickWeaponItem in Players[id].Weapons)
+                            {
+                                bool isNewWeapon = true;
+                                foreach (var lastTickWeaponItem in LastTickPlayers[id].Weapons)
+                                    if (lastTickWeaponItem.Weapon == newTickWeaponItem.Weapon)
+                                        isNewWeapon = false;
+                                
+                                if(isNewWeapon)
+                                    boughtWeapons.Add(newTickWeaponItem);
+                            }
+
+                            ItemBuyEventArgs itemBuyEventArgs = new ItemBuyEventArgs();
+                            itemBuyEventArgs.boughtItem = boughtWeapons;
+                            itemBuyEventArgs.buyer = Players[id];
+
+                            ItemBuy(this, itemBuyEventArgs);
+                        }
+                    }
+                }
+            }
+            LastTickPlayers.Clear();
 
 			if (b) {
 				if (TickDone != null)
@@ -1002,6 +1055,12 @@ namespace DemoInfo
 
 		#region EventCaller
 
+        internal void RaiseItemBought(ItemBuyEventArgs item)
+        {
+            if (ItemBuy != null)
+                ItemBuy(this, item);
+        }
+
 		internal void RaiseMatchStarted()
 		{
 			if (MatchStarted != null)
@@ -1196,7 +1255,7 @@ namespace DemoInfo
 			{
 				serverClass.Dispose ();
 			}
-
+         
 			this.TickDone = null;
 			this.BombAbortDefuse = null;
 			this.BombAbortPlant = null;
@@ -1219,6 +1278,7 @@ namespace DemoInfo
 			this.SmokeNadeEnded = null;
 			this.SmokeNadeStarted = null;
 			this.WeaponFired = null;
+            this.ItemBuy = null;
 
 			Players.Clear ();
 		}

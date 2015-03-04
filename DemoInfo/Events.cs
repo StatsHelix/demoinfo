@@ -7,6 +7,12 @@ using System.Diagnostics;
 
 namespace DemoInfo
 {
+    public class ItemBuyEventArgs : EventArgs
+    {
+        public List<Equipment> boughtItem { get; internal set; }
+        public Player buyer { get; internal set; }
+    }
+
     public class HeaderParsedEventArgs : EventArgs
     {
         public DemoHeader Header { get; private set; }
@@ -371,7 +377,22 @@ namespace DemoInfo
 
 			return weapon;
 		}
-	}
+
+        internal Equipment Copy()
+        {
+            Equipment me = new Equipment();
+
+            me.EntityID = EntityID;
+            me.Weapon = Weapon;
+            me.OriginalString = OriginalString;
+            me.SkinID = SkinID;
+            me.AmmoInMagazine = AmmoInMagazine;
+            me.AmmoType = AmmoType;
+            me.Owner = Owner;
+
+            return me;
+        }
+    }
 
 	public enum EquipmentElement
 	{
