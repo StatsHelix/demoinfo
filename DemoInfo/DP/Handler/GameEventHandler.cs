@@ -14,8 +14,6 @@ namespace DemoInfo.DP.Handler
 	/// </summary>
 	public static class GameEventHandler
 	{
-		public static List<string> messages = new List<string>();
-
 		public static void HandleGameEventList(IEnumerable<GameEventList.Descriptor> gel, DemoParser parser)
 		{
 			parser.GEH_Descriptors = new Dictionary<int, GameEventList.Descriptor>();
@@ -38,9 +36,6 @@ namespace DemoInfo.DP.Handler
 
 			Dictionary<string, object> data;
 			var eventDescriptor = descriptors[rawEvent.EventId];
-
-			if(!messages.Contains((eventDescriptor.Name)))
-				messages.Add(eventDescriptor.Name);
 
 			if (parser.Players.Count == 0 && eventDescriptor.Name != "player_connect")
 				return;
