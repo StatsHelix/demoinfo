@@ -94,13 +94,6 @@ namespace DemoInfo
 			me.HP = HP;
 			me.Armor = Armor;
 
-            //Needed for ItemBoughtEvent
-		    foreach (var equipment in rawWeapons)
-		    {
-		        me.rawWeapons.Add(equipment.Key, equipment.Value.Copy());
-		    }
-		    me.Money = Money;
-
 			me.ViewDirectionX = ViewDirectionX;
 			me.ViewDirectionY = ViewDirectionY;
 			me.Disconnected = Disconnected;

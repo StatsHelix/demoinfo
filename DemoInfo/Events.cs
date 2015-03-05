@@ -7,28 +7,28 @@ using System.Diagnostics;
 
 namespace DemoInfo
 {
-    public class ItemBuyEventArgs : EventArgs
-    {
-        public List<Equipment> boughtItem { get; internal set; }
-        public Player buyer { get; internal set; }
-    }
+	public class ItemBuyEventArgs : EventArgs
+	{
+		public List<Equipment> boughtItem { get; internal set; }
+		public Player buyer { get; internal set; }
+	}
 
-    public class HeaderParsedEventArgs : EventArgs
-    {
-        public DemoHeader Header { get; private set; }
+	public class HeaderParsedEventArgs : EventArgs
+	{
+		public DemoHeader Header { get; private set; }
 
-        public HeaderParsedEventArgs(DemoHeader header)
-        {
-            this.Header = header;
-        }
-    }
+		public HeaderParsedEventArgs(DemoHeader header)
+		{
+			this.Header = header;
+		}
+	}
 
-    public class TickDoneEventArgs : EventArgs
-    {
-    }
+	public class TickDoneEventArgs : EventArgs
+	{
+	}
 
-    public class MatchStartedEventArgs : EventArgs
-    {
+	public class MatchStartedEventArgs : EventArgs
+	{
 	}
 
 	public class RoundEndedEventArgs : EventArgs
@@ -116,7 +116,7 @@ namespace DemoInfo
 		{
 			
 		}
-  	}
+	}
 	public class SmokeEventArgs : NadeEventArgs
 	{
 		public SmokeEventArgs () : base(EquipmentElement.Smoke)
@@ -148,19 +148,19 @@ namespace DemoInfo
 		}
 	}
 
-    public class BombEventArgs : EventArgs
-    {
-        public Player Player { get; set; }
+	public class BombEventArgs : EventArgs
+	{
+		public Player Player { get; set; }
 
-        public char Site { get; set; }
-    }
+		public char Site { get; set; }
+	}
 
-    public class BombDefuseEventArgs : EventArgs
-    {
-        public Player Player { get; set; }
+	public class BombDefuseEventArgs : EventArgs
+	{
+		public Player Player { get; set; }
 
-        public bool HasKit { get; set; }
-    }
+		public bool HasKit { get; set; }
+	}
 
 	public class Equipment
 	{
@@ -357,8 +357,8 @@ namespace DemoInfo
 				case "inferno":
 					weapon = EquipmentElement.Incendiary;
 					break;
-                case "usp_silencer_off":
-                    weapon = EquipmentElement.USP;
+				case "usp_silencer_off":
+					weapon = EquipmentElement.USP;
 					break;
 				case "scar17"://These crash the game when given via give weapon_[mp5navy|...], and cannot be purchased ingame.
 				case "sg550"://yet the server-classes are networked, so I need to resolve them. 
@@ -369,30 +369,30 @@ namespace DemoInfo
 				case "tmp":
 					weapon = EquipmentElement.Unknown;
 					break;
-                default:
+				default:
 					Trace.WriteLine("Unknown weapon. " + OriginalString, "Equipment.MapEquipment()");
-                    break;
+					break;
 				}
 			}
 
 			return weapon;
 		}
 
-        internal Equipment Copy()
-        {
-            Equipment me = new Equipment();
+		internal Equipment Copy()
+		{
+			Equipment me = new Equipment();
 
-            me.EntityID = EntityID;
-            me.Weapon = Weapon;
-            me.OriginalString = OriginalString;
-            me.SkinID = SkinID;
-            me.AmmoInMagazine = AmmoInMagazine;
-            me.AmmoType = AmmoType;
-            me.Owner = Owner;
+			me.EntityID = EntityID;
+			me.Weapon = Weapon;
+			me.OriginalString = OriginalString;
+			me.SkinID = SkinID;
+			me.AmmoInMagazine = AmmoInMagazine;
+			me.AmmoType = AmmoType;
+			me.Owner = Owner;
 
-            return me;
-        }
-    }
+			return me;
+		}
+	}
 
 	public enum EquipmentElement
 	{
