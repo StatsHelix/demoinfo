@@ -8,6 +8,8 @@ using System.IO;
 using System.Linq;
 using System.Diagnostics;
 using System.Text;
+using DemoInfo.Comparer;
+using DemoInfo.DP.Handler;
 
 namespace DemoInfo
 {
@@ -25,6 +27,7 @@ namespace DemoInfo
 		internal const int MAX_ENTITIES = ( ( 1 << MAX_EDICT_BITS ) );
 		const int MAXPLAYERS = 64;
 		const int MAXWEAPONS = 64;
+		public List<Player> LastTickPlayers = new List<Player>();
 
 
 		#region Events
@@ -173,6 +176,10 @@ namespace DemoInfo
 		/// </summary>
 		public event EventHandler<BombDefuseEventArgs> BombAbortDefuse;
 
+		/// <summary>
+		/// Raised when an Item is Bought
+		/// </summary>
+		public event EventHandler<ItemBuyEventArgs> ItemBuy;
 		#endregion
 
 		/// <summary>
@@ -362,7 +369,7 @@ namespace DemoInfo
 		/// <value>The tick time.</value>
 		public float TickTime {
 			get { return this.Header.PlaybackTime / this.Header.PlaybackFrames; }
-   		}
+		}
 
 		/// <summary>
 		/// Gets the parsing progess. 0 = beginning, ~1 = finished (it can actually be > 1, so be careful!)
@@ -452,9 +459,28 @@ namespace DemoInfo
 			if (Header == null)
 				throw new InvalidOperationException ("You need to call ParseHeader first before you call ParseToEnd or ParseNextTick!");
 
+			//For an item Buy Event we need: a. Player.SteamID, b. Player.Money, c. Player.Weapons in a not referencing way
+			//Idea a: List<struct PMW> (PlayerID, Money, Weapon)
+			//Idea b: new Player, Player = Original Players ID and Money, Player.Weapons = Weapons.Copy
+			//Without at least this much data I think its impossible
+			foreach (var playerEnt in Players)
+			{
+				Player me = new Player();
+				me.SteamID = playerEnt.Value.SteamID;
+
+				foreach (var weapon in playerEnt.Value.rawWeapons)
+				{
+					me.rawWeapons.Add(weapon.Key, weapon.Value.Copy());
+				}
+
+				me.Money = playerEnt.Value.Money;
+				LastTickPlayers.Add(me);       
+			}
+
 			bool b = ParseTick();
-			
-			for (int i = 0; i < RawPlayers.Length; i++) {
+
+			for (int i = 0; i < RawPlayers.Length; i++)
+			{
 				if (RawPlayers[i] == null)
 					continue;
 
@@ -462,7 +488,9 @@ namespace DemoInfo
 
 				int id = rawPlayer.UserID;
 
-				if (PlayerInformations[i] != null) { //There is an good entity for this
+				if (PlayerInformations[i] != null)
+				{
+					//There is an good entity for this
 					if (!Players.ContainsKey(id))
 						Players[id] = PlayerInformations[i];
 
@@ -470,13 +498,39 @@ namespace DemoInfo
 					p.Name = rawPlayer.Name;
 					p.SteamID = rawPlayer.XUID;
 
-					p.AdditionaInformations = additionalInformations [p.EntityID];
+					p.AdditionaInformations = additionalInformations[p.EntityID];
 
-					if (p.IsAlive) {
+					if (p.IsAlive)
+					{
 						p.LastAlivePosition = p.Position.Copy();
+					}
+
+					//
+					//ItemBuy Event
+					//
+					Player matchingPlayer = LastTickPlayers.Find(j => j.SteamID == p.SteamID && j.SteamID != 0);
+
+					//this will work except if a hostage is in ones molotov while picking up a gun, => money goes down and weapon changes
+					//this could be avoided with comparing the moneyloss with the items bought, but what if you buy while burning a hossie?
+					if (matchingPlayer != null && p.Money < matchingPlayer.Money)
+					{
+						HashSet<Equipment> boughtWeapons = new HashSet<Equipment>(p.Weapons,new EquipmentComparer());
+					 
+						boughtWeapons.ExceptWith(matchingPlayer.Weapons);
+
+						if (boughtWeapons.Count > 0)
+						{
+							ItemBuyEventArgs itemBuyEventArgs = new ItemBuyEventArgs();
+							itemBuyEventArgs.boughtItem = boughtWeapons.ToList();
+							itemBuyEventArgs.buyer = Players[id];
+
+							ItemBuy(this, itemBuyEventArgs);
+						}
 					}
 				}
 			}
+
+			LastTickPlayers.Clear();
 
 			if (b) {
 				if (TickDone != null)
@@ -554,7 +608,7 @@ namespace DemoInfo
 			BitStream.BeginChunk(BitStream.ReadSignedInt(32) * 8);
 			DemoPacketParser.ParsePacket(BitStream, this);
 			BitStream.EndChunk();
-   		}
+		}
 
 		/// <summary>
 		/// Binds the events for entities. And Entity has many properties. 
@@ -1002,6 +1056,12 @@ namespace DemoInfo
 
 		#region EventCaller
 
+		internal void RaiseItemBought(ItemBuyEventArgs item)
+		{
+			if (ItemBuy != null)
+				ItemBuy(this, item);
+		}
+
 		internal void RaiseMatchStarted()
 		{
 			if (MatchStarted != null)
@@ -1196,7 +1256,7 @@ namespace DemoInfo
 			{
 				serverClass.Dispose ();
 			}
-
+		 
 			this.TickDone = null;
 			this.BombAbortDefuse = null;
 			this.BombAbortPlant = null;
@@ -1219,6 +1279,7 @@ namespace DemoInfo
 			this.SmokeNadeEnded = null;
 			this.SmokeNadeStarted = null;
 			this.WeaponFired = null;
+			this.ItemBuy = null;
 
 			Players.Clear ();
 		}

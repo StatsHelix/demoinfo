@@ -40,51 +40,58 @@ namespace DemoInfo.DP.Handler
 			if (parser.Players.Count == 0 && eventDescriptor.Name != "player_connect")
 				return;
 
-			if (eventDescriptor.Name == "round_start") {
-				data = MapData (eventDescriptor, rawEvent);
+			if (eventDescriptor.Name == "round_start")
+			{
+				data = MapData(eventDescriptor, rawEvent);
 
-				RoundStartedEventArgs rs = new RoundStartedEventArgs () { 
-					TimeLimit = (int)data["timelimit"],
-					FragLimit = (int)data["fraglimit"],
-					Objective = (string)data["objective"]
+				RoundStartedEventArgs rs = new RoundStartedEventArgs()
+				{
+					TimeLimit = (int) data["timelimit"],
+					FragLimit = (int) data["fraglimit"],
+					Objective = (string) data["objective"]
 				};
 
-				parser.RaiseRoundStart (rs);
+				parser.RaiseRoundStart(rs);
 
 			}
 
-			if (eventDescriptor.Name == "round_end") {
-				data = MapData (eventDescriptor, rawEvent);
+			if (eventDescriptor.Name == "round_end")
+			{
+				data = MapData(eventDescriptor, rawEvent);
 
 				Team t = Team.Spectate;
 
-				int winner = (int)data ["winner"];
+				int winner = (int) data["winner"];
 
 				if (winner == parser.tID)
 					t = Team.Terrorist;
 				else if (winner == parser.ctID)
 					t = Team.CounterTerrorist;
 
-				RoundEndedEventArgs roundEnd = new RoundEndedEventArgs () {
-					Reason = (RoundEndReason)data["reason"],
+				RoundEndedEventArgs roundEnd = new RoundEndedEventArgs()
+				{
+					Reason = (RoundEndReason) data["reason"],
 					Winner = t,
-					Message = (string)data["message"],
+					Message = (string) data["message"],
 				};
 
-				parser.RaiseRoundEnd (roundEnd);
+				parser.RaiseRoundEnd(roundEnd);
 			}
 
 			if (eventDescriptor.Name == "round_officially_ended")
-				parser.RaiseRoundOfficiallyEnd ();
+				parser.RaiseRoundOfficiallyEnd();
 
-			if (eventDescriptor.Name == "round_mvp") {
-				data = MapData (eventDescriptor, rawEvent);
-			
+			if (eventDescriptor.Name == "round_mvp")
+			{
+				data = MapData(eventDescriptor, rawEvent);
+
 				RoundMVPEventArgs roundMVPArgs = new RoundMVPEventArgs();
-                roundMVPArgs.Player = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
-				roundMVPArgs.Reason = (RoundMVPReason)data["reason"];
-				
-				parser.RaiseRoundMVP (roundMVPArgs);
+				roundMVPArgs.Player = parser.Players.ContainsKey((int) data["userid"])
+					? parser.Players[(int) data["userid"]]
+					: null;
+				roundMVPArgs.Reason = (RoundMVPReason) data["reason"];
+
+				parser.RaiseRoundMVP(roundMVPArgs);
 			}
 
 			if (eventDescriptor.Name == "bot_takeover")
@@ -92,195 +99,226 @@ namespace DemoInfo.DP.Handler
 				data = MapData(eventDescriptor, rawEvent);
 
 				BotTakeOverEventArgs botTakeOverArgs = new BotTakeOverEventArgs();
-				botTakeOverArgs.Taker = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
+				botTakeOverArgs.Taker = parser.Players.ContainsKey((int) data["userid"])
+					? parser.Players[(int) data["userid"]]
+					: null;
 
 				parser.RaiseBotTakeOver(botTakeOverArgs);
 			}
 
 			if (eventDescriptor.Name == "begin_new_match")
-				parser.RaiseMatchStarted ();
+				parser.RaiseMatchStarted();
 
 			if (eventDescriptor.Name == "round_freeze_end")
-				parser.RaiseFreezetimeEnded ();
+				parser.RaiseFreezetimeEnded();
 
 			//if (eventDescriptor.Name != "player_footstep" && eventDescriptor.Name != "weapon_fire" && eventDescriptor.Name != "player_jump") {
 			//	Console.WriteLine (eventDescriptor.Name);
 			//}
 
 			switch (eventDescriptor.Name) {
-			case "weapon_fire":
+				case "weapon_fire":
 
-				data = MapData (eventDescriptor, rawEvent);
+					data = MapData(eventDescriptor, rawEvent);
 
-				WeaponFiredEventArgs fire = new WeaponFiredEventArgs ();
-				fire.Shooter = parser.Players.ContainsKey ((int)data ["userid"]) ? parser.Players [(int)data ["userid"]] : null;
-				fire.Weapon = new Equipment ((string)data ["weapon"]);
+					WeaponFiredEventArgs fire = new WeaponFiredEventArgs();
+					fire.Shooter = parser.Players.ContainsKey((int) data["userid"])
+						? parser.Players[(int) data["userid"]]
+						: null;
+					fire.Weapon = new Equipment((string) data["weapon"]);
 
-				if (fire.Shooter != null && fire.Weapon.Class != EquipmentClass.Grenade) {
-					fire.Weapon = fire.Shooter.ActiveWeapon;
-				}
+					if (fire.Shooter != null && fire.Weapon.Class != EquipmentClass.Grenade)
+					{
+						fire.Weapon = fire.Shooter.ActiveWeapon;
+					}
 
-				parser.RaiseWeaponFired(fire);
-				break;
-			case "player_death":
-				data = MapData(eventDescriptor, rawEvent);
+					parser.RaiseWeaponFired(fire);
+					break;
+				case "player_death":
+					data = MapData(eventDescriptor, rawEvent);
 
-				PlayerKilledEventArgs kill = new PlayerKilledEventArgs();
+					PlayerKilledEventArgs kill = new PlayerKilledEventArgs();
 
-                kill.DeathPerson = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
-				kill.Killer = parser.Players.ContainsKey((int)data["attacker"]) ? parser.Players[(int)data["attacker"]] : null;
-				kill.Assister = parser.Players.ContainsKey((int)data["assister"]) ? parser.Players[(int)data["assister"]] : null;
-				kill.Headshot = (bool)data["headshot"];
-				kill.Weapon = new Equipment((string)data["weapon"], (string)data["weapon_itemid"]);
+					kill.DeathPerson = parser.Players.ContainsKey((int) data["userid"])
+						? parser.Players[(int) data["userid"]]
+						: null;
+					kill.Killer = parser.Players.ContainsKey((int) data["attacker"])
+						? parser.Players[(int) data["attacker"]]
+						: null;
+					kill.Assister = parser.Players.ContainsKey((int) data["assister"])
+						? parser.Players[(int) data["assister"]]
+						: null;
+					kill.Headshot = (bool) data["headshot"];
+					kill.Weapon = new Equipment((string) data["weapon"], (string) data["weapon_itemid"]);
 
-				if (kill.Killer != null && kill.Weapon.Class != EquipmentClass.Grenade && kill.Killer.Weapons.Any()) {
-					#if DEBUG
+					if (kill.Killer != null && kill.Weapon.Class != EquipmentClass.Grenade && kill.Killer.Weapons.Any())
+					{
+#if DEBUG
 					if(kill.Weapon.Weapon != kill.Killer.ActiveWeapon.Weapon)
 						throw new InvalidDataException();
 					#endif
-					kill.Weapon = kill.Killer.ActiveWeapon;
-				}
-
-
-				kill.PenetratedObjects = (int)data["penetrated"];
-
-				parser.RaisePlayerKilled(kill);
-				break;
-
-				#region Nades
-			case "player_blind":
-				data = MapData(eventDescriptor, rawEvent);
-				if (parser.Players.ContainsKey((int)data["userid"]))
-					blindPlayers.Add(parser.Players[(int)data["userid"]]);
-				break;
-			case "flashbang_detonate":
-				var args = FillNadeEvent<FlashEventArgs>(MapData(eventDescriptor, rawEvent), parser);
-				args.FlashedPlayers = blindPlayers.ToArray();
-				parser.RaiseFlashExploded(args);
-				blindPlayers.Clear();
-				break;
-			case "hegrenade_detonate":
-				parser.RaiseGrenadeExploded(FillNadeEvent<GrenadeEventArgs>(MapData(eventDescriptor, rawEvent), parser));
-				break;
-			case "decoy_started":
-				parser.RaiseDecoyStart(FillNadeEvent<DecoyEventArgs>(MapData(eventDescriptor, rawEvent), parser));
-				break;
-			case "decoy_detonate":
-				parser.RaiseDecoyEnd(FillNadeEvent<DecoyEventArgs>(MapData(eventDescriptor, rawEvent), parser));
-				break;
-			case "smokegrenade_detonate":
-				parser.RaiseSmokeStart(FillNadeEvent<SmokeEventArgs>(MapData(eventDescriptor, rawEvent), parser));
-				break;
-			case "smokegrenade_expired":
-				parser.RaiseSmokeEnd(FillNadeEvent<SmokeEventArgs>(MapData(eventDescriptor, rawEvent), parser));
-				break;
-			case "inferno_startburn":
-				parser.RaiseFireStart(FillNadeEvent<FireEventArgs>(MapData(eventDescriptor, rawEvent), parser));
-				break;
-			case "inferno_expire":
-				parser.RaiseFireEnd(FillNadeEvent<FireEventArgs>(MapData(eventDescriptor, rawEvent), parser));
-				break;
-				#endregion
-			
-			case "player_connect":
-				data = MapData (eventDescriptor, rawEvent);
-
-				PlayerInfo player = new PlayerInfo ();
-				player.UserID = (int)data ["userid"];
-				player.Name = (string)data ["name"];
-				player.GUID = (string)data ["networkid"];
-				player.XUID = player.GUID == "BOT" ? 0 : GetCommunityID (player.GUID);
-
-
-				//player.IsFakePlayer = (bool)data["bot"];
-
-				int index = (int)data["index"];
-
-				parser.RawPlayers[index] = player;
-
-
-				break;
-			case "player_disconnect":
-				data = MapData(eventDescriptor, rawEvent);
-				int toDelete = (int)data["userid"];
-				for (int i = 0; i < parser.RawPlayers.Length; i++) {
-
-					if (parser.RawPlayers[i] != null && parser.RawPlayers[i].UserID == toDelete) {
-						parser.RawPlayers[i] = null;
-						break;
+						kill.Weapon = kill.Killer.ActiveWeapon;
 					}
-				}
 
-				parser.Players.Remove(toDelete);
 
-				break;
-			case "bomb_beginplant": //When the bomb is starting to get planted
-			case "bomb_abortplant": //When the bomb planter stops planting the bomb
-			case "bomb_planted": //When the bomb has been planted
-			case "bomb_defused": //When the bomb has been defused
-			case "bomb_exploded": //When the bomb has exploded
-				data = MapData(eventDescriptor, rawEvent);
+					kill.PenetratedObjects = (int) data["penetrated"];
 
-				var bombEventArgs = new BombEventArgs();
-                bombEventArgs.Player = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
+					parser.RaisePlayerKilled(kill);
+					break;
 
-				int site = (int)data["site"];
+					#region Nades
 
-				if (site == parser.bombsiteAIndex) {
-					bombEventArgs.Site = 'A';
-				} else if (site == parser.bombsiteBIndex) {
-					bombEventArgs.Site = 'B';
-				} else {
-					var relevantTrigger = parser.triggers.Single(a => a.Index == site);
-					if (relevantTrigger.Contains(parser.bombsiteACenter)) {
-						//planted at A.
+				case "player_blind":
+					data = MapData(eventDescriptor, rawEvent);
+					if (parser.Players.ContainsKey((int) data["userid"]))
+						blindPlayers.Add(parser.Players[(int) data["userid"]]);
+					break;
+				case "flashbang_detonate":
+					var args = FillNadeEvent<FlashEventArgs>(MapData(eventDescriptor, rawEvent), parser);
+					args.FlashedPlayers = blindPlayers.ToArray();
+					parser.RaiseFlashExploded(args);
+					blindPlayers.Clear();
+					break;
+				case "hegrenade_detonate":
+					parser.RaiseGrenadeExploded(FillNadeEvent<GrenadeEventArgs>(MapData(eventDescriptor, rawEvent), parser));
+					break;
+				case "decoy_started":
+					parser.RaiseDecoyStart(FillNadeEvent<DecoyEventArgs>(MapData(eventDescriptor, rawEvent), parser));
+					break;
+				case "decoy_detonate":
+					parser.RaiseDecoyEnd(FillNadeEvent<DecoyEventArgs>(MapData(eventDescriptor, rawEvent), parser));
+					break;
+				case "smokegrenade_detonate":
+					parser.RaiseSmokeStart(FillNadeEvent<SmokeEventArgs>(MapData(eventDescriptor, rawEvent), parser));
+					break;
+				case "smokegrenade_expired":
+					parser.RaiseSmokeEnd(FillNadeEvent<SmokeEventArgs>(MapData(eventDescriptor, rawEvent), parser));
+					break;
+				case "inferno_startburn":
+					parser.RaiseFireStart(FillNadeEvent<FireEventArgs>(MapData(eventDescriptor, rawEvent), parser));
+					break;
+				case "inferno_expire":
+					parser.RaiseFireEnd(FillNadeEvent<FireEventArgs>(MapData(eventDescriptor, rawEvent), parser));
+					break;
+
+					#endregion
+
+				case "player_connect":
+					data = MapData(eventDescriptor, rawEvent);
+
+					PlayerInfo player = new PlayerInfo();
+					player.UserID = (int) data["userid"];
+					player.Name = (string) data["name"];
+					player.GUID = (string) data["networkid"];
+					player.XUID = player.GUID == "BOT" ? 0 : GetCommunityID(player.GUID);
+
+
+					//player.IsFakePlayer = (bool)data["bot"];
+
+					int index = (int) data["index"];
+
+					parser.RawPlayers[index] = player;
+
+
+					break;
+				case "player_disconnect":
+					data = MapData(eventDescriptor, rawEvent);
+					int toDelete = (int) data["userid"];
+					for (int i = 0; i < parser.RawPlayers.Length; i++)
+					{
+
+						if (parser.RawPlayers[i] != null && parser.RawPlayers[i].UserID == toDelete)
+						{
+							parser.RawPlayers[i] = null;
+							break;
+						}
+					}
+
+					parser.Players.Remove(toDelete);
+
+					break;
+				case "bomb_beginplant": //When the bomb is starting to get planted
+				case "bomb_abortplant": //When the bomb planter stops planting the bomb
+				case "bomb_planted": //When the bomb has been planted
+				case "bomb_defused": //When the bomb has been defused
+				case "bomb_exploded": //When the bomb has exploded
+					data = MapData(eventDescriptor, rawEvent);
+
+					var bombEventArgs = new BombEventArgs();
+					bombEventArgs.Player = parser.Players.ContainsKey((int) data["userid"])
+						? parser.Players[(int) data["userid"]]
+						: null;
+
+					int site = (int) data["site"];
+
+					if (site == parser.bombsiteAIndex)
+					{
 						bombEventArgs.Site = 'A';
-						parser.bombsiteAIndex = site;
-					} else if (relevantTrigger.Contains(parser.bombsiteBCenter)) {
-						//planted at B.
-						bombEventArgs.Site = 'B';
-						parser.bombsiteBIndex = site;
-					} else {
-						throw new InvalidDataException("Was the bomb planted at C? Neither A nor B is inside the bombsite");
 					}
-				}
+					else if (site == parser.bombsiteBIndex)
+					{
+						bombEventArgs.Site = 'B';
+					}
+					else
+					{
+						var relevantTrigger = parser.triggers.Single(a => a.Index == site);
+						if (relevantTrigger.Contains(parser.bombsiteACenter))
+						{
+							//planted at A.
+							bombEventArgs.Site = 'A';
+							parser.bombsiteAIndex = site;
+						}
+						else if (relevantTrigger.Contains(parser.bombsiteBCenter))
+						{
+							//planted at B.
+							bombEventArgs.Site = 'B';
+							parser.bombsiteBIndex = site;
+						}
+						else
+						{
+							throw new InvalidDataException(
+								"Was the bomb planted at C? Neither A nor B is inside the bombsite");
+						}
+					}
 
+					switch (eventDescriptor.Name)
+					{
+						case "bomb_beginplant":
+							parser.RaiseBombBeginPlant(bombEventArgs);
+							break;
+						case "bomb_abortplant":
+							parser.RaiseBombAbortPlant(bombEventArgs);
+							break;
+						case "bomb_planted":
+							parser.RaiseBombPlanted(bombEventArgs);
+							break;
+						case "bomb_defused":
+							parser.RaiseBombDefused(bombEventArgs);
+							break;
+						case "bomb_exploded":
+							parser.RaiseBombExploded(bombEventArgs);
+							break;
+					}
 
-
-
-				switch (eventDescriptor.Name) {
-				case "bomb_beginplant":
-					parser.RaiseBombBeginPlant(bombEventArgs);
 					break;
-				case "bomb_abortplant":
-					parser.RaiseBombAbortPlant(bombEventArgs);
+				case "bomb_begindefuse":
+					data = MapData(eventDescriptor, rawEvent);
+					var e = new BombDefuseEventArgs();
+					e.Player = parser.Players.ContainsKey((int) data["userid"])
+						? parser.Players[(int) data["userid"]]
+						: null;
+					e.HasKit = (bool) data["haskit"];
+					parser.RaiseBombBeginDefuse(e);
 					break;
-				case "bomb_planted":
-					parser.RaiseBombPlanted(bombEventArgs);
+				case "bomb_abortdefuse":
+					data = MapData(eventDescriptor, rawEvent);
+					var e2 = new BombDefuseEventArgs();
+					e2.Player = parser.Players.ContainsKey((int) data["userid"])
+						? parser.Players[(int) data["userid"]]
+						: null;
+					e2.HasKit = e2.Player.HasDefuseKit;
+					parser.RaiseBombAbortDefuse(e2);
 					break;
-				case "bomb_defused":
-					parser.RaiseBombDefused(bombEventArgs);
-					break;
-				case "bomb_exploded":
-					parser.RaiseBombExploded(bombEventArgs);
-					break;
-				}
-
-				break;
-			case "bomb_begindefuse":
-				data = MapData(eventDescriptor, rawEvent);
-				var e = new BombDefuseEventArgs();
-                e.Player = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
-				e.HasKit = (bool)data["haskit"];
-				parser.RaiseBombBeginDefuse(e);
-				break;
-			case "bomb_abortdefuse":
-				data = MapData(eventDescriptor, rawEvent);
-				var e2 = new BombDefuseEventArgs();
-                e2.Player = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
-				e2.HasKit = e2.Player.HasDefuseKit;
-				parser.RaiseBombAbortDefuse(e2);
-				break;
 			}
 		}
 
