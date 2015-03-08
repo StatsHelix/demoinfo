@@ -804,7 +804,7 @@ namespace DemoInfo
 
 						AttributeWeapon(index, p);
 					} else {
-						if(cache[iForTheMethod] != 0)
+                        if (cache[iForTheMethod] != 0 && p.rawWeapons.ContainsKey(cache[iForTheMethod]))
 						{
 							p.rawWeapons[cache[iForTheMethod]].Owner = null;
 						}
