@@ -1074,9 +1074,6 @@ namespace DemoInfo
 		{
 			if (SmokeNadeEnded != null)
 				SmokeNadeEnded(this, args);
-
-			if (NadeReachedTarget != null)
-				NadeReachedTarget(this, args);
 		}
 
 		internal void RaiseDecoyStart(DecoyEventArgs args)
@@ -1092,9 +1089,6 @@ namespace DemoInfo
 		{
 			if (DecoyNadeEnded != null)
 				DecoyNadeEnded(this, args);
-
-			if (NadeReachedTarget != null)
-				NadeReachedTarget(this, args);
 		}
 
 		internal void RaiseFireStart(FireEventArgs args)
@@ -1110,9 +1104,6 @@ namespace DemoInfo
 		{
 			if (FireNadeEnded != null)
 				FireNadeEnded(this, args);
-
-			if (NadeReachedTarget != null)
-				NadeReachedTarget(this, args);
 		}
 
 		internal void RaiseFlashExploded(FlashEventArgs args)
