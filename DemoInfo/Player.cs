@@ -37,6 +37,8 @@ namespace DemoInfo
 
 		public int RoundStartEquipmentValue { get; set; }
 
+		public bool IsDucking { get; set; }
+
 		internal Entity Entity;
 
 		public bool Disconnected { get; set; }
