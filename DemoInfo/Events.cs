@@ -64,6 +64,9 @@ namespace DemoInfo
 	{
 		public Equipment Weapon { get; internal set; }
 
+		[Obsolete("Use \"Victim\" instead. This will be removed soon™", false)]
+		public Player DeathPerson { get { return Victim; } }
+
 		public Player Victim { get; internal set; }
 
 		public Player Killer { get; internal set; }
