@@ -362,7 +362,7 @@ namespace DemoInfo
 		/// <value>The tick time.</value>
 		public float TickTime {
 			get { return this.Header.PlaybackTime / this.Header.PlaybackFrames; }
-   		}
+		}
 
 		/// <summary>
 		/// Gets the parsing progess. 0 = beginning, ~1 = finished (it can actually be > 1, so be careful!)
@@ -554,7 +554,7 @@ namespace DemoInfo
 			BitStream.BeginChunk(BitStream.ReadSignedInt(32) * 8);
 			DemoPacketParser.ParsePacket(BitStream, this);
 			BitStream.EndChunk();
-   		}
+		}
 
 		/// <summary>
 		/// Binds the events for entities. And Entity has many properties. 
@@ -804,7 +804,7 @@ namespace DemoInfo
 
 						AttributeWeapon(index, p);
 					} else {
-                        if (cache[iForTheMethod] != 0 && p.rawWeapons.ContainsKey(cache[iForTheMethod]))
+						if (cache[iForTheMethod] != 0 && p.rawWeapons.ContainsKey(cache[iForTheMethod]))
 						{
 							p.rawWeapons[cache[iForTheMethod]].Owner = null;
 						}
