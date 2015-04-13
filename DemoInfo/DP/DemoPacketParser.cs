@@ -43,6 +43,8 @@ namespace DemoInfo.DP
 					new CreateStringTable().Parse(bitstream, demo);
 				} else if (cmd == (int)SVC_Messages.svc_UpdateStringTable) {
 					new UpdateStringTable().Parse(bitstream, demo);
+				} else if (cmd == (int)NET_Messages.net_Tick) { //and all this other stuff
+						new NETTick().Parse(bitstream, demo);
 				} else {
 					//You can use this flag to see what information the other packets contain, 
 					//if you want. Then you can look into the objects. Has some advnatages, and some disdavantages (mostly speed), 

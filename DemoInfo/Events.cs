@@ -23,11 +23,37 @@ namespace DemoInfo
 
     public class MatchStartedEventArgs : EventArgs
     {
+	}
 
+	public class RoundEndedEventArgs : EventArgs
+	{
+		public RoundEndReason Reason { get; set; }
+
+		public string Message { get; set; }
+
+		/// <summary>
+		/// The winning team. Spectate for everything that isn't CT or T. 
+		/// </summary>
+		public Team Winner;
+
+	}
+
+	public class RoundOfficiallyEndedEventArgs : EventArgs
+	{
+	}
+
+	public class RoundMVPEventArgs : EventArgs
+	{
+		public Player Player { get; set; }
+
+		public RoundMVPReason Reason  { get; set; }
 	}
 
 	public class RoundStartedEventArgs : EventArgs
 	{
+		public int TimeLimit  { get; set; }
+		public int FragLimit  { get; set; }
+		public string Objective { get; set; }
 	}
 
 	public class FreezetimeEndedEventArgs : EventArgs
@@ -47,6 +73,11 @@ namespace DemoInfo
 		public int PenetratedObjects { get; internal set; }
 
 		public bool Headshot { get; internal set; }
+	}
+
+	public class BotTakeOverEventArgs : EventArgs
+	{
+		public Player Taker { get; internal set; }
 	}
 
 	public class WeaponFiredEventArgs : EventArgs
@@ -149,7 +180,7 @@ namespace DemoInfo
 
 		public int ReserveAmmo {
 			get {
-				return (Owner != null || AmmoType == -1) ? Owner.AmmoLeft [AmmoType] : -1;
+				return (Owner != null && AmmoType != -1) ? Owner.AmmoLeft [AmmoType] : -1;
 			}
 		}
 

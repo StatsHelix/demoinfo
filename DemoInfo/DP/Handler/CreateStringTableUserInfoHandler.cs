@@ -13,7 +13,9 @@ namespace DemoInfo.DP.Handler
         public static void Apply(CreateStringTable table, IBitStream reader, DemoParser parser)
         {
 			if (table.Name == "modelprecache") {
-				parser.modelprecache.Clear ();
+                while (parser.modelprecache.Count < table.MaxEntries) {
+                    parser.modelprecache.Add(null);
+                }
 			}
 
 			if (reader.ReadBit())
@@ -91,7 +93,10 @@ namespace DemoInfo.DP.Handler
 					int classid = int.Parse(entry); //wtf volvo?
 
 					parser.instanceBaseline[classid] = userdata;
-				}
+                }
+                else if (table.Name == "modelprecache") {
+                    parser.modelprecache[entryIndex] = entry;
+                }
 			}
 
 			parser.stringTables.Add(table);

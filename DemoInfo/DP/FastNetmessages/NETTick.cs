@@ -10,7 +10,7 @@ namespace DemoInfo
 		public UInt32 HostComputationTimeStdDeviation;
 		public UInt32 HostFramestartTimeStdDeviation;
 
-		public void Parse(IBitStream bitstream)
+		public void Parse(IBitStream bitstream, DemoParser parser)
 		{
 			while (!bitstream.ChunkFinished) {
 				var desc = bitstream.ReadProtobufVarInt();
@@ -39,6 +39,8 @@ namespace DemoInfo
 					break;
 				}
 			}
+
+			parser.IngameTick = (int)Tick;
 		}
 	}
 }
