@@ -60,6 +60,10 @@ namespace DemoInfo
 	{
 	}
 
+	public class RoundFinalEventArgs : EventArgs
+	{
+	}
+
 	public class FreezetimeEndedEventArgs : EventArgs
 	{
 	}

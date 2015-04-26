@@ -56,6 +56,9 @@ namespace DemoInfo.DP.Handler
 			if (eventDescriptor.Name == "cs_win_panel_match")
 				parser.RaiseWinPanelMatch();
 
+			if (eventDescriptor.Name == "round_announce_final")
+				parser.RaiseRoundFinal();
+
 			if (eventDescriptor.Name == "round_end") {
 				data = MapData (eventDescriptor, rawEvent);
 

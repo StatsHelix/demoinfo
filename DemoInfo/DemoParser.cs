@@ -50,6 +50,11 @@ namespace DemoInfo
 		/// </summary>
 		public event EventHandler<WinPanelMatchEventArgs> WinPanelMatch;
 
+		/// <summary>
+		/// Occurs when it's the last round of a match
+		/// </summary>
+		public event EventHandler<RoundFinalEventArgs> RoundFinal;
+
 		/// Occurs when round ends
 		/// </summary>
 		public event EventHandler<RoundEndedEventArgs> RoundEnd;
@@ -1018,6 +1023,12 @@ namespace DemoInfo
 		{
 			if (WinPanelMatch != null)
 				WinPanelMatch(this, new WinPanelMatchEventArgs());
+		}
+
+		internal void RaiseRoundFinal()
+		{
+			if (RoundFinal != null)
+				RoundFinal(this, new RoundFinalEventArgs());
 		}
 
 		internal void RaiseRoundStart(RoundStartedEventArgs rs)
