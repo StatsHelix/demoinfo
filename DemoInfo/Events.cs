@@ -56,6 +56,10 @@ namespace DemoInfo
 		public string Objective { get; set; }
 	}
 
+	public class WinPanelMatchEventArgs : EventArgs
+	{
+	}
+
 	public class FreezetimeEndedEventArgs : EventArgs
 	{
 	}

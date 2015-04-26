@@ -51,6 +51,11 @@ namespace DemoInfo
 		public event EventHandler<RoundEndedEventArgs> RoundEnd;
 
 		/// <summary>
+		/// Occurs at the end of the match, when the scoreboard is shown
+		/// </summary>
+		public event EventHandler<WinPanelMatchEventArgs> WinPanelMatch;
+
+		/// <summary>
 		/// Occurs when round really ended
 		/// </summary>
 		public event EventHandler<RoundOfficiallyEndedEventArgs> RoundOfficiallyEnd;
@@ -1008,6 +1013,12 @@ namespace DemoInfo
 		{
 			if (MatchStarted != null)
 				MatchStarted(this, new MatchStartedEventArgs());
+		}
+
+		internal void RaiseWinPanelMatch()
+		{
+			if (WinPanelMatch != null)
+				WinPanelMatch(this, new WinPanelMatchEventArgs());
 		}
 
 		internal void RaiseRoundStart(RoundStartedEventArgs rs)
