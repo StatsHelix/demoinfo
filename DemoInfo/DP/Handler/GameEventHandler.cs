@@ -59,6 +59,9 @@ namespace DemoInfo.DP.Handler
 			if (eventDescriptor.Name == "round_announce_final")
 				parser.RaiseRoundFinal();
 
+			if (eventDescriptor.Name == "round_announce_last_round_half")
+				parser.RaiseLastRoundHalf();
+
 			if (eventDescriptor.Name == "round_end") {
 				data = MapData (eventDescriptor, rawEvent);
 

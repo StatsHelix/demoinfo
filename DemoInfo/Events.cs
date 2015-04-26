@@ -64,6 +64,10 @@ namespace DemoInfo
 	{
 	}
 
+	public class LastRoundHalfEventArgs : EventArgs
+	{
+	}
+
 	public class FreezetimeEndedEventArgs : EventArgs
 	{
 	}

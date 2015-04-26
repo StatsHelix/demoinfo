@@ -61,6 +61,11 @@ namespace DemoInfo
 		public event EventHandler<RoundFinalEventArgs> RoundFinal;
 
 		/// <summary>
+		/// Occurs at the half of a side
+		/// </summary>
+		public event EventHandler<LastRoundHalfEventArgs> LastRoundHalf;
+
+		/// <summary>
 		/// Occurs when round really ended
 		/// </summary>
 		public event EventHandler<RoundOfficiallyEndedEventArgs> RoundOfficiallyEnd;
@@ -1036,6 +1041,12 @@ namespace DemoInfo
 		{
 			if (RoundFinal != null)
 				RoundFinal(this, new RoundFinalEventArgs());
+		}
+
+		internal void RaiseLastRoundHalf()
+		{
+			if (LastRoundHalf != null)
+				LastRoundHalf(this, new LastRoundHalfEventArgs());
 		}
 
 		internal void RaiseRoundEnd(RoundEndedEventArgs re)
