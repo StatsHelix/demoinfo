@@ -97,6 +97,11 @@ namespace DemoInfo
 		public event EventHandler<PlayerKilledEventArgs> PlayerKilled;
 
 		/// <summary>
+		/// Occurs when a player select a team
+		/// </summary>
+		public event EventHandler<PlayerTeamEventArgs> PlayerTeam;
+
+		/// <summary>
 		/// Occurs when a weapon is fired.
 		/// </summary>
 		public event EventHandler<WeaponFiredEventArgs> WeaponFired;
@@ -1080,6 +1085,12 @@ namespace DemoInfo
 		{
 			if (PlayerKilled != null)
 				PlayerKilled(this, kill);
+		}
+
+		internal void RaisePlayerTeam(PlayerTeamEventArgs args)
+		{
+			if (PlayerTeam != null)
+				PlayerTeam(this, args);
 		}
 
 		internal void RaiseBotTakeOver(BotTakeOverEventArgs take)

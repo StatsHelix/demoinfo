@@ -72,6 +72,19 @@ namespace DemoInfo
 	{
 	}
 
+	public class PlayerTeamEventArgs : EventArgs
+	{
+		public Player Swapped { get; internal set; }
+
+		public Team NewTeam { get; internal set; }
+
+		public Team OldTeam { get; internal set; }
+
+		public bool Silent { get; internal set; }
+
+		public bool IsBot { get; internal set; }
+	}
+
 	public class PlayerKilledEventArgs : EventArgs
 	{
 		public Equipment Weapon { get; internal set; }

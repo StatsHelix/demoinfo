@@ -223,6 +223,35 @@ namespace DemoInfo.DP.Handler
 				parser.Players.Remove(toDelete);
 
 				break;
+
+			case "player_team":
+				data = MapData(eventDescriptor, rawEvent);
+				PlayerTeamEventArgs playerTeamEvent = new PlayerTeamEventArgs();
+
+				Team t = Team.Spectate;
+
+				int team = (int)data["team"];
+
+				if (team == parser.tID)
+					t = Team.Terrorist;
+				else if (team == parser.ctID)
+					t = Team.CounterTerrorist;
+				playerTeamEvent.NewTeam = t;
+
+				t = Team.Spectate;
+				team = (int)data["oldteam"];
+				if (team == parser.tID)
+					t = Team.Terrorist;
+				else if (team == parser.ctID)
+					t = Team.CounterTerrorist;
+				playerTeamEvent.OldTeam = t;
+
+				playerTeamEvent.Swapped = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
+				playerTeamEvent.IsBot = (bool)data["isbot"];
+				playerTeamEvent.Silent = (bool)data["silent"];
+
+				parser.RaisePlayerTeam(playerTeamEvent);
+				break;
 			case "bomb_beginplant": //When the bomb is starting to get planted
 			case "bomb_abortplant": //When the bomb planter stops planting the bomb
 			case "bomb_planted": //When the bomb has been planted
