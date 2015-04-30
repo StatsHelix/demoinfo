@@ -51,6 +51,21 @@ namespace DemoInfo
 		public event EventHandler<RoundEndedEventArgs> RoundEnd;
 
 		/// <summary>
+		/// Occurs at the end of the match, when the scoreboard is shown
+		/// </summary>
+		public event EventHandler<WinPanelMatchEventArgs> WinPanelMatch;
+
+		/// <summary>
+		/// Occurs when it's the last round of a match
+		/// </summary>
+		public event EventHandler<RoundFinalEventArgs> RoundFinal;
+
+		/// <summary>
+		/// Occurs at the half of a side
+		/// </summary>
+		public event EventHandler<LastRoundHalfEventArgs> LastRoundHalf;
+
+		/// <summary>
 		/// Occurs when round really ended
 		/// </summary>
 		public event EventHandler<RoundOfficiallyEndedEventArgs> RoundOfficiallyEnd;
@@ -80,6 +95,11 @@ namespace DemoInfo
 		/// also note that the killed player is still alive when this is killed
 		/// </summary>
 		public event EventHandler<PlayerKilledEventArgs> PlayerKilled;
+
+		/// <summary>
+		/// Occurs when a player select a team
+		/// </summary>
+		public event EventHandler<PlayerTeamEventArgs> PlayerTeam;
 
 		/// <summary>
 		/// Occurs when a weapon is fired.
@@ -1010,11 +1030,28 @@ namespace DemoInfo
 				MatchStarted(this, new MatchStartedEventArgs());
 		}
 
+		internal void RaiseWinPanelMatch()
+		{
+			if (WinPanelMatch != null)
+				WinPanelMatch(this, new WinPanelMatchEventArgs());
+		}
+
 		internal void RaiseRoundStart(RoundStartedEventArgs rs)
 		{
 			if (RoundStart != null)
 				RoundStart(this, rs);
+		}
 
+		internal void RaiseRoundFinal()
+		{
+			if (RoundFinal != null)
+				RoundFinal(this, new RoundFinalEventArgs());
+		}
+
+		internal void RaiseLastRoundHalf()
+		{
+			if (LastRoundHalf != null)
+				LastRoundHalf(this, new LastRoundHalfEventArgs());
 		}
 
 		internal void RaiseRoundEnd(RoundEndedEventArgs re)
@@ -1048,6 +1085,12 @@ namespace DemoInfo
 		{
 			if (PlayerKilled != null)
 				PlayerKilled(this, kill);
+		}
+
+		internal void RaisePlayerTeam(PlayerTeamEventArgs args)
+		{
+			if (PlayerTeam != null)
+				PlayerTeam(this, args);
 		}
 
 		internal void RaiseBotTakeOver(BotTakeOverEventArgs take)
