@@ -19,6 +19,7 @@ namespace DemoInfo.BitStreamImpl
 		private byte[] Buffer = new byte[BUFSIZE];
 
 		private int BitsInBuffer;
+		private bool EndOfStream = false;
 
 		private readonly Stack<long> ChunkTargets = new Stack<long>();
 		private long LazyGlobalPosition = 0;
@@ -76,6 +77,41 @@ namespace DemoInfo.BitStreamImpl
 		private void RefillBuffer()
 		{
 			do {
+				/*
+				 * End of stream detection:
+				 * These if clauses are kinda reversed, so this is how we're gonna do it:
+				 * a) your average read:
+				 *    None of them trigger. End of story.
+				 * b) the first read into the last buffer:
+				 *    the (thisTime == 0) down there fires
+				 * c) the LAST read (end of stream follows):
+				 *    the if (EndOfStream) fires, setting BitsInBuffer to 0 and zeroing out
+				 *    the head of the buffer, so we read zeroes instead of random other stuff
+				 * d) the (overflowing) read after the last read:
+				 *    BitsInBuffer is 0 now, so we throw
+				 *
+				 * Just like chunking, this safety net has as little performance overhead as possible,
+				 * at the cost of throwing later than it could (which can be too late in some
+				 * scenarios; as in: you stop using the bitstream before it throws).
+				 */
+				if (EndOfStream) {
+					if (BitsInBuffer == 0)
+						throw new EndOfStreamException();
+
+					/*
+					 * Another late overrun detection:
+					 * Offset SHOULD be < 0 after this.
+					 * So Offset < BitsInBuffer.
+					 * So we don't loop again.
+					 * If it's not, we'll loop again which is exactly what we want
+					 * as we overran the stream and wanna hit the throw above.
+					 */
+					Offset -= BitsInBuffer + 1;
+					*(uint*)PBuffer = 0; // safety
+					BitsInBuffer = 0;
+					continue;
+				}
+
 				// copy the sled
 				*(uint*)PBuffer = *(uint*)(PBuffer + (BitsInBuffer >> 3));
 
@@ -88,9 +124,11 @@ namespace DemoInfo.BitStreamImpl
 
 				BitsInBuffer = 8 * offset;
 
-				if (thisTime == 0)
+				if (thisTime == 0) {
 					// end of stream, so we can consume the sled now
 					BitsInBuffer += SLED * 8;
+					EndOfStream = true;
+				}
 			} while (Offset >= BitsInBuffer);
 		}
 
@@ -285,6 +323,9 @@ namespace DemoInfo.BitStreamImpl
 				if (Underlying.CanSeek) {
 					int bufferBits = BitsInBuffer - Offset;
 					if ((bufferBits + (SLED * 8)) < delta) {
+						if (EndOfStream)
+							throw new EndOfStreamException();
+
 						int unbufferedSkipBits = delta - bufferBits;
 						Underlying.Seek((unbufferedSkipBits >> 3) - SLED, SeekOrigin.Current);
 
@@ -295,9 +336,11 @@ namespace DemoInfo.BitStreamImpl
 
 						BitsInBuffer = 8 * (offset - SLED);
 
-						if (thisTime == 0)
+						if (thisTime == 0) {
 							// end of stream, so we can consume the sled now
 							BitsInBuffer += SLED * 8;
+							EndOfStream = true;
+						}
 
 						Offset = unbufferedSkipBits & 7;
 						LazyGlobalPosition = target - Offset;
