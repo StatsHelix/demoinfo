@@ -1223,6 +1223,8 @@ namespace DemoInfo
 		/// collector can reclaim the memory that the <see cref="DemoInfo.DemoParser"/> was occupying.</remarks>
 		public void Dispose ()
 		{
+			BitStream.Dispose();
+
 			foreach (var entity in Entities) {
 				if(entity != null)
 					entity.Leave ();
