@@ -35,11 +35,26 @@ namespace DemoInfo.BitStreamImpl
 			Offset = SLED * 8;
 		}
 
+		~UnsafeBitStream()
+		{
+			Dispose();
+		}
+
 		void IDisposable.Dispose()
 		{
-			PBuffer = (byte*)IntPtr.Zero.ToPointer(); // null it out
-			HBuffer.Free();
-			Buffer = null;
+			Dispose();
+			GC.SuppressFinalize(this);
+		}
+
+		private void Dispose()
+		{
+			var nullptr = (byte*)IntPtr.Zero.ToPointer();
+			if (PBuffer != nullptr) {
+				// GCHandle docs state that Free() must only be called once.
+				// So we use PBuffer to ensure that.
+				PBuffer = nullptr;
+				HBuffer.Free();
+			}
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
