@@ -341,6 +341,26 @@ namespace DemoInfo
 		}
 
 		/// <summary>
+		/// The flag of the Counter-Terrorists
+		/// </summary>
+		/// <value>The flag of the CT clan.</value>
+		public string CTFlag
+		{
+			get;
+			private set;
+		}
+
+		/// <summary>
+		/// The flag of the Terrorists
+		/// </summary>
+		/// <value>The flag of the T clan.</value>
+		public string TFlag
+		{
+			get;
+			private set;
+		}
+
+		/// <summary>
 		/// And GameEvent is just sent with ID |--> Value, but we need Name |--> Value. 
 		/// Luckily these contain a map ID |--> Name.
 		/// </summary>
@@ -601,6 +621,7 @@ namespace DemoInfo
 
 				string team = null;
 				string teamName = null;
+				string teamFlag = null;
 				int teamID = -1;
 				int score = 0;
 
@@ -662,6 +683,19 @@ namespace DemoInfo
 							foreach(var p in PlayerInformations.Where(a => a != null && a.TeamID == teamID))
 								p.Team = Team.Terrorist;
 						}
+					}
+				};
+
+				e.Entity.FindProperty("m_szTeamFlagImage").StringRecived += (sender_, recivedTeamFlag) => {
+					teamFlag = recivedTeamFlag.Value;
+
+					if (team == "CT")
+					{
+						CTFlag = teamFlag;
+                    }
+					else if (team == "TERRORIST")
+					{
+						TFlag = teamFlag;
 					}
 				};
 
