@@ -1,5 +1,7 @@
 #DemoInfo
 
+[![Join the chat at https://gitter.im/EHVAG/demoinfo](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/EHVAG/demoinfo?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 This is a C#-Library that makes reading CS:GO-Demos and analyzing them easier. 
 
 ![Travis CI results](https://travis-ci.org/EHVAG/demoinfo.svg?branch=master)
