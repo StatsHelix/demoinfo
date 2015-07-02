@@ -155,6 +155,26 @@ namespace DemoInfo.DP.Handler
 
 				parser.RaisePlayerKilled(kill);
 				break;
+			case "player_hurt":
+				data = MapData (eventDescriptor, rawEvent);
+
+				PlayerHurtEventArgs hurt = new PlayerHurtEventArgs ();
+				hurt.Player = parser.Players.ContainsKey ((int)data ["userid"]) ? parser.Players [(int)data ["userid"]] : null;
+				hurt.Attacker = parser.Players.ContainsKey ((int)data ["attacker"]) ? parser.Players [(int)data ["attacker"]] : null;
+				hurt.Health = (int)data ["health"];
+				hurt.Armor = (int)data ["armor"];
+				hurt.HealthDamage = (int)data ["dmg_health"];
+				hurt.ArmorDamage = (int)data ["dmg_armor"];
+				hurt.Hitgroup = (Hitgroup)((int)data ["hitgroup"]);
+
+				hurt.Weapon = new Equipment ((string)data ["weapon"], "");
+
+				if (hurt.Attacker != null && hurt.Weapon.Class != EquipmentClass.Grenade && hurt.Attacker.Weapons.Any ()) {
+					hurt.Weapon = hurt.Attacker.ActiveWeapon;
+				}
+
+				parser.RaisePlayerHurt (hurt);
+				break;
 
 				#region Nades
 			case "player_blind":

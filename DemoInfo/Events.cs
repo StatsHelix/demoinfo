@@ -184,6 +184,63 @@ namespace DemoInfo
 		public bool HasKit { get; set; }
 	}
 
+	public class PlayerHurtEventArgs : EventArgs
+	{
+		/// <summary>
+		/// The hurt player
+		/// </summary>
+		public Player Player { get; set; }
+
+		/// <summary>
+		/// The attacking player
+		/// </summary>
+		public Player Attacker { get; set; }
+
+		/// <summary>
+		/// Remaining health points of the player
+		/// </summary>
+		public int Health { get; set; }
+
+		/// <summary>
+		/// Remaining armor points of the player
+		/// </summary>
+		public int Armor { get; set; }
+
+		/// <summary>
+		/// The Weapon used to attack. 
+		/// Note: This might be not the same as the raw event
+		/// we replace "hpk2000" with "usp-s" if the attacker
+		/// is currently holding it - this value is originally
+		/// networked "wrong". By using this property you always
+		/// get the "right" weapon
+		/// </summary>
+		/// <value>The weapon.</value>
+		public Equipment Weapon { get; set; }
+
+		/// <summary>
+		/// The original "weapon"-value from the event. 
+		/// Might be wrong for USP, CZ and M4A1-S
+		/// </summary>
+		/// <value>The weapon string.</value>
+		public string WeaponString { get; set; }
+
+		/// <summary>
+		/// The damage done to the players health
+		/// </summary>
+		public int HealthDamage { get; set; }
+
+		/// <summary>
+		/// The damage done to the players armor
+		/// </summary>
+		public int ArmorDamage { get; set; }
+
+		/// <summary>
+		/// Where the Player was hit. 
+		/// </summary>
+		/// <value>The hitgroup.</value>
+		public Hitgroup Hitgroup { get; set; }
+	}
+
 	public class Equipment
 	{
 		internal int EntityID { get; set; }

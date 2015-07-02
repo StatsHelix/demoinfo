@@ -193,6 +193,11 @@ namespace DemoInfo
 		/// </summary>
 		public event EventHandler<BombDefuseEventArgs> BombAbortDefuse;
 
+		/// <summary>
+		/// Occurs when an player is attacked by another player.
+		/// Hint: Only occurs in GOTV-demos. 
+		/// </summary>
+		public event EventHandler<PlayerHurtEventArgs> PlayerHurt;
 		#endregion
 
 		/// <summary>
@@ -1119,6 +1124,12 @@ namespace DemoInfo
 		{
 			if (PlayerKilled != null)
 				PlayerKilled(this, kill);
+		}
+
+		internal void RaisePlayerHurt(PlayerHurtEventArgs hurt)
+		{
+			if (PlayerHurt != null)
+				PlayerHurt(this, hurt);
 		}
 
 		internal void RaisePlayerTeam(PlayerTeamEventArgs args)
