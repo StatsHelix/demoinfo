@@ -58,6 +58,7 @@ A list of which game-events are implemented and which aren't can be found [here]
 * Scores
 * Team-names
 * The following game-events: 
+ * Player was attacked (for GOTV demos newer than July 1st 2015)
  * Exploding / starting / stopping of the following nades: 
     * Grenade (position, throwing player)
     * Smoke (position, throwing player, when did it start, when did it stop)
