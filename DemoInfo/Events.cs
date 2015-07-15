@@ -241,6 +241,16 @@ namespace DemoInfo
 		public Hitgroup Hitgroup { get; set; }
 	}
 
+	public class PlayerBindEventArgs : EventArgs
+	{
+		public Player Player {get; set; }
+	}
+
+	public class PlayerDisconnectEventArgs : EventArgs
+	{
+		public Player Player {get; set; }
+	}
+
 	public class Equipment
 	{
 		internal int EntityID { get; set; }
