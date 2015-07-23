@@ -198,6 +198,18 @@ namespace DemoInfo
 		/// Hint: Only occurs in GOTV-demos. 
 		/// </summary>
 		public event EventHandler<PlayerHurtEventArgs> PlayerHurt;
+
+
+		/// <summary>
+		/// Occurs when the player object is first updated to reference all the necessary information
+		/// Hint: Event will be raised when any player with a SteamID connects, not just PlayingParticipants
+		/// </summary>
+		public event EventHandler<PlayerBindEventArgs> PlayerBind;
+
+		/// <summary>
+		/// Occurs when a player disconnects from the server. 
+		/// </summary>
+		public event EventHandler<PlayerDisconnectEventArgs> PlayerDisconnect;
 		#endregion
 
 		/// <summary>
@@ -508,8 +520,11 @@ namespace DemoInfo
 				int id = rawPlayer.UserID;
 
 				if (PlayerInformations[i] != null) { //There is an good entity for this
-					if (!Players.ContainsKey(id))
+					bool newplayer = false;
+					if (!Players.ContainsKey(id)){
 						Players[id] = PlayerInformations[i];
+						newplayer = true;
+					}
 
 					Player p = Players[id];
 					p.Name = rawPlayer.Name;
@@ -519,6 +534,12 @@ namespace DemoInfo
 
 					if (p.IsAlive) {
 						p.LastAlivePosition = p.Position.Copy();
+					}
+
+					if (newplayer && p.SteamID != 0){
+						PlayerBindEventArgs bind = new PlayerBindEventArgs();
+						bind.Player = p;
+						RaisePlayerBind(bind);
 					}
 				}
 			}
@@ -1130,6 +1151,18 @@ namespace DemoInfo
 		{
 			if (PlayerHurt != null)
 				PlayerHurt(this, hurt);
+		}
+
+		internal void RaisePlayerBind(PlayerBindEventArgs bind)
+		{
+			if (PlayerBind != null)
+				PlayerBind(this, bind);
+		}
+
+		internal void RaisePlayerDisconnect(PlayerDisconnectEventArgs bind)
+		{
+			if (PlayerDisconnect != null)
+				PlayerDisconnect(this, bind);
 		}
 
 		internal void RaisePlayerTeam(PlayerTeamEventArgs args)

@@ -231,6 +231,11 @@ namespace DemoInfo.DP.Handler
 				break;
 			case "player_disconnect":
 				data = MapData(eventDescriptor, rawEvent);
+
+				PlayerDisconnectEventArgs disconnect = new PlayerDisconnectEventArgs();
+				disconnect.Player = parser.Players[(int)data["userid"]];
+				parser.RaisePlayerDisconnect(disconnect);
+
 				int toDelete = (int)data["userid"];
 				for (int i = 0; i < parser.RawPlayers.Length; i++) {
 
