@@ -14,7 +14,7 @@ namespace DemoInfo
 	{
 		public static string ReadCString(this BinaryReader reader, int length)
 		{
-			return ReadCString(reader, length, Encoding.Default);
+			return ReadCString(reader, length, Encoding.UTF8);
 		}
 
 		public static int ReadInt32SwapEndian(this BinaryReader reader)
