@@ -233,7 +233,7 @@ namespace DemoInfo.DP.Handler
 				data = MapData(eventDescriptor, rawEvent);
 
 				PlayerDisconnectEventArgs disconnect = new PlayerDisconnectEventArgs();
-				disconnect.Player = parser.Players[(int)data["userid"]];
+				disconnect.Player = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
 				parser.RaisePlayerDisconnect(disconnect);
 
 				int toDelete = (int)data["userid"];
@@ -245,7 +245,10 @@ namespace DemoInfo.DP.Handler
 					}
 				}
 
-				parser.Players.Remove(toDelete);
+				if (parser.Players.ContainsKey(toDelete))
+				{
+					parser.Players.Remove(toDelete);
+				}
 
 				break;
 
