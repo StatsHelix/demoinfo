@@ -66,6 +66,10 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="protobuf-net, Version=2.0.0.668, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\protobuf-net.2.0.0.668\lib\net40\protobuf-net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
@@ -108,11 +112,11 @@
     <Compile Include="DP\FastNetmessages\CreateStringTable.cs" />
     <Compile Include="DP\FastNetmessages\UpdateStringTable.cs" />
     <Compile Include="DP\FastNetmessages\SendTable.cs" />
-    <Compile Include="Messages\EnumConstants.cs" />
     <Compile Include="AdditionalPlayerInformation.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
@@ -126,7 +130,5 @@
   </Target>
   -->
   <ItemGroup />
-  <ItemGroup>
-    <Folder Include="DP\FastNetmessages\" />
-  </ItemGroup>
+  <ItemGroup />
 </Project>

@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using DemoInfo.DT;
 using DemoInfo.DP;
+using ProtoBuf;
 
 namespace DemoInfo
 {
@@ -74,7 +73,7 @@ namespace DemoInfo
 
 			while (true) {
 				byte b = reader.ReadByte();
-                
+				
 				if (b == 0)
 					break;
 
@@ -84,7 +83,6 @@ namespace DemoInfo
 			return Encoding.Default.GetString(result.ToArray());
 		}
 
-		#if SLOW_PROTOBUF
 		public static T ReadProtobufMessage<T>(this BinaryReader reader)
 		{
 			return ReadProtobufMessage<T>(reader, PrefixStyle.Base128);
@@ -92,12 +90,12 @@ namespace DemoInfo
 
 		public static T ReadProtobufMessage<T>(this BinaryReader reader, PrefixStyle style)
 		{
-			return ProtoBuf.Serializer.DeserializeWithLengthPrefix<T>(reader.BaseStream, style);
+			return Serializer.DeserializeWithLengthPrefix<T>(reader.BaseStream, style);
 		}
 
 		public static IExtensible ReadProtobufMessage(this BinaryReader reader, Type T, PrefixStyle style)
 		{
-			var type = typeof(ProtoBuf.Serializer);
+			var type = typeof(Serializer);
 			var deserialize = type.GetMethod("DeserializeWithLengthPrefix", new Type[] {
 				typeof(Stream),
 				typeof(PrefixStyle)
@@ -110,7 +108,7 @@ namespace DemoInfo
 
 		public static IExtensible ReadProtobufMessage(this Stream stream, Type T)
 		{
-			var type = typeof(ProtoBuf.Serializer);
+			var type = typeof(Serializer);
 			var deserialize = type.GetMethod("Deserialize", new Type[] {
 				typeof(Stream),
 			});
@@ -119,7 +117,6 @@ namespace DemoInfo
 
 			return (IExtensible)deserialize.Invoke(null, new object[] { stream });
 		}
-		#endif
 
 		public static TValue GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue)
 		{
