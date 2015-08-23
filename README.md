@@ -44,7 +44,7 @@ A list of which game-events are implemented and which aren't can be found [here]
  * Position
  * View-Direction
  * HP
- * Wether he is alive
+ * Whether he is alive
  * The players team (CT / T / Spectator)
  * The players weapons
  * Kills
