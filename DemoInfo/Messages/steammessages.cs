@@ -7,7 +7,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-#if SLOW_PROTOBUF
 // Generated from: steammessages.proto
 // Note: requires additional types generated from: google/protobuf/descriptor.proto
 namespace DemoInfo.Messages
@@ -2765,4 +2764,3 @@ namespace DemoInfo.Messages
     }
   
 }
-#endif
