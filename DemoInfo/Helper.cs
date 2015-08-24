@@ -7,6 +7,9 @@ using System.Text;
 using System.Threading.Tasks;
 using DemoInfo.DT;
 using DemoInfo.DP;
+#if SLOW_PROTOBUF
+using ProtoBuf;
+#endif
 
 namespace DemoInfo
 {
@@ -92,12 +95,12 @@ namespace DemoInfo
 
 		public static T ReadProtobufMessage<T>(this BinaryReader reader, PrefixStyle style)
 		{
-			return ProtoBuf.Serializer.DeserializeWithLengthPrefix<T>(reader.BaseStream, style);
+			return Serializer.DeserializeWithLengthPrefix<T>(reader.BaseStream, style);
 		}
 
 		public static IExtensible ReadProtobufMessage(this BinaryReader reader, Type T, PrefixStyle style)
 		{
-			var type = typeof(ProtoBuf.Serializer);
+			var type = typeof(Serializer);
 			var deserialize = type.GetMethod("DeserializeWithLengthPrefix", new Type[] {
 				typeof(Stream),
 				typeof(PrefixStyle)
@@ -110,7 +113,7 @@ namespace DemoInfo
 
 		public static IExtensible ReadProtobufMessage(this Stream stream, Type T)
 		{
-			var type = typeof(ProtoBuf.Serializer);
+			var type = typeof(Serializer);
 			var deserialize = type.GetMethod("Deserialize", new Type[] {
 				typeof(Stream),
 			});
