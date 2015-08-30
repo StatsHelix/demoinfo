@@ -40,7 +40,7 @@ namespace DemoInfo
 				}
 			}
 
-			parser.IngameTick = (int)Tick;
+			parser.CurrentTick = (int)Tick;
 		}
 	}
 }
