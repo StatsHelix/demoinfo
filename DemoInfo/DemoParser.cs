@@ -212,6 +212,22 @@ namespace DemoInfo
 		public event EventHandler<PlayerDisconnectEventArgs> PlayerDisconnect;
 		#endregion
 
+		#if SLOW_PROTOBUF
+		#region UserMessage events
+
+		/// <summary>
+		/// Occurs when the server use 'say'
+		/// </summary>
+		public event EventHandler<SayTextEventArgs> SayText;
+
+		/// <summary>
+		/// Occurs when the server use 'say'
+		/// </summary>
+		public event EventHandler<SayText2EventArgs> SayText2;
+
+		#endregion
+		#endif
+
 		/// <summary>
 		/// The mapname of the Demo. Only avaible after the header is parsed. 
 		/// Is a string like "de_dust2".
@@ -1290,6 +1306,25 @@ namespace DemoInfo
 		}
 
 		#endregion
+
+		#if SLOW_PROTOBUF
+		#region UserMessage event caller
+
+		internal void RaiseSayText(SayTextEventArgs st)
+		{
+			if (SayText != null)
+				SayText(this, st);
+		}
+
+		internal void RaiseSayText2(SayText2EventArgs st)
+		{
+			if (SayText2 != null)
+				SayText2(this, st);
+		}
+
+		#endregion
+		#endif
+
 		/// <summary>
 		/// Releases all resource used by the <see cref="DemoInfo.DemoParser"/> object. This must be called or evil things (memory leaks) happen. 
 		/// Sorry for that - I've debugged and I don't know why this is, but I can't fix it somehow. 

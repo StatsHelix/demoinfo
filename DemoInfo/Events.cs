@@ -17,6 +17,59 @@ namespace DemoInfo
 		}
 	}
 
+	#if SLOW_PROTOBUF
+	/// <summary>
+	/// CCSUsrMsg_SayText2 arguments (when a player use the say command)
+	/// Not sure about Chat and TextAllChat
+	/// GOTV doesn't record chat team so this 2 bool are every time true
+	/// </summary>
+	public class SayText2EventArgs : EventArgs
+	{
+		/// <summary>
+		/// The player who sent the message
+		/// </summary>
+		public Player Sender { get; set; }
+
+		/// <summary>
+		/// The message (nickname : message)
+		/// </summary>
+		public string Text { get; set; }
+
+		/// <summary>
+		/// Not sure about it, maybe it's to indicate say_team or say
+		/// </summary>
+		public bool Chat { get; set; }
+
+		/// <summary>
+		/// true if the message is for all players ?
+		/// </summary>
+		public bool TextAllChat { get; set; }
+	}
+
+	/// <summary>
+	/// CCSUsrMsg_SayText arguments (when the server use the say command)
+	/// Not sure about Chat and TextAllChat
+	/// GOTV doesn't record chat team so this 2 bool are every time false
+	/// </summary>
+	public class SayTextEventArgs : EventArgs
+	{
+		/// <summary>
+		/// The player who sent the message
+		/// </summary>
+		public string Text { get; set; }
+
+		/// <summary>
+		/// The message (nickname : message)
+		/// </summary>
+		public bool Chat { get; set; }
+
+		/// <summary>
+		/// true if the message is for all players ?
+		/// </summary>
+		public bool TextAllChat { get; set; }
+	}
+	#endif
+
 	public class TickDoneEventArgs : EventArgs
 	{
 	}
