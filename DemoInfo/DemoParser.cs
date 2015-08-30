@@ -579,6 +579,8 @@ namespace DemoInfo
 			IngameTick = (int)BitStream.ReadInt(32); // tick number
 			BitStream.ReadByte(); // player slot
 
+			CurrentTick++;
+
 			switch (command) {
 			case DemoCommand.Synctick:
 				break;

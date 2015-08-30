@@ -39,8 +39,6 @@ namespace DemoInfo
 					break;
 				}
 			}
-
-			parser.CurrentTick = (int)Tick;
 		}
 	}
 }
