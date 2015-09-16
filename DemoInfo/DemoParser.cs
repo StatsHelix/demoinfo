@@ -225,6 +225,11 @@ namespace DemoInfo
 		/// </summary>
 		public event EventHandler<SayText2EventArgs> SayText2;
 
+		/// <summary>
+		/// Occurs when players ranks are displayed (at the end of the match)
+		/// </summary>
+		public event EventHandler<ServerRankUpdateEventArgs> ServerRankUpdate;
+
 		#endregion
 		#endif
 
@@ -1320,6 +1325,12 @@ namespace DemoInfo
 		{
 			if (SayText2 != null)
 				SayText2(this, st);
+		}
+
+		internal void RaiseServerRankUpdate(ServerRankUpdateEventArgs sru)
+		{
+			if (ServerRankUpdate != null)
+				ServerRankUpdate(this, sru);
 		}
 
 		#endregion

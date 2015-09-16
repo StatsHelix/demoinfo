@@ -68,6 +68,43 @@ namespace DemoInfo
 		/// </summary>
 		public bool TextAllChat { get; set; }
 	}
+
+	/// <summary>
+	/// CCSUsrMsg_ServerRankUpdate arguments (when players ranks are displayed)
+	/// Only on Valve demos (MM)
+	/// </summary>
+	public class ServerRankUpdateEventArgs : EventArgs
+	{
+		public struct RankStruct
+		{
+			/// <summary>
+			/// Player SteamID
+			/// </summary>
+			public long SteamId { get; set; }
+
+			/// <summary>
+			/// Old rank id
+			/// </summary>
+			public int Old { get; set; }
+
+			/// <summary>
+			/// New rank id
+			/// </summary>
+			public int New { get; set; }
+
+			/// <summary>
+			/// Number of total wins
+			/// </summary>
+			public int NumWins { get; set; }
+
+			/// <summary>
+			/// Gap between the old and new rank
+			/// </summary>
+			public float RankChange { get; set; }
+		}
+
+		public List<RankStruct> RankStructList { get; set; }
+	}
 	#endif
 
 	public class TickDoneEventArgs : EventArgs

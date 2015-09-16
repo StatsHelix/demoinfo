@@ -9,6 +9,8 @@ namespace DemoInfo.DP.Handler
 	#if SLOW_PROTOBUF
 	public class UserMessageHandler : IMessageParser
 	{
+		private const long VALVE_MAGIC_NUMBER = 76561197960265728;
+
 		public bool TryApplyMessage(ProtoBuf.IExtensible message, DemoParser parser)
 		{
 			CSVCMsg_UserMessage userMessage = message as CSVCMsg_UserMessage;
@@ -56,6 +58,32 @@ namespace DemoInfo.DP.Handler
 								// @params is a 4 length array but only 2 are used [0] = nickname [1] = message text
 								e.Text = sayMsg.@params[0] + " : " + sayMsg.@params[1];
 								parser.RaiseSayText2(e);
+								break;
+							}
+						case "CCSUsrMsg_ServerRankUpdate":
+							{
+								ServerRankUpdateEventArgs e = new ServerRankUpdateEventArgs
+								{
+									RankStructList = new List<ServerRankUpdateEventArgs.RankStruct>()
+								};
+
+								CCSUsrMsg_ServerRankUpdate rankMsg = (CCSUsrMsg_ServerRankUpdate)data;
+
+								foreach (CCSUsrMsg_ServerRankUpdate.RankUpdate rankUpdate in (rankMsg.rank_update))
+								{
+									ServerRankUpdateEventArgs.RankStruct rankStruct = new ServerRankUpdateEventArgs.RankStruct
+									{
+										New = rankUpdate.rank_new,
+										Old = rankUpdate.rank_old,
+										NumWins = rankUpdate.num_wins,
+										RankChange = rankUpdate.rank_change,
+										SteamId = rankUpdate.account_id + VALVE_MAGIC_NUMBER
+									};
+									e.RankStructList.Add(rankStruct);
+								}
+
+								parser.RaiseServerRankUpdate(e);
+
 								break;
 							}
 						default:
