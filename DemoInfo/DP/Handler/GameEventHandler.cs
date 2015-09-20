@@ -155,6 +155,10 @@ namespace DemoInfo.DP.Handler
 
 				parser.RaisePlayerKilled(kill);
 				break;
+			case "buytime_ended":
+					BuyTimeEndedEventArgs buytime = new BuyTimeEndedEventArgs();
+					parser.RaiseBuyTimeEnded(buytime);
+					break;
 			case "player_hurt":
 				data = MapData (eventDescriptor, rawEvent);
 

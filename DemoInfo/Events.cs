@@ -274,6 +274,10 @@ namespace DemoInfo
 		public bool HasKit { get; set; }
 	}
 
+	public class BuyTimeEndedEventArgs : EventArgs
+	{
+	}
+
 	public class PlayerHurtEventArgs : EventArgs
 	{
 		/// <summary>

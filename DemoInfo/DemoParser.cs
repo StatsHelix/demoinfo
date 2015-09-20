@@ -199,6 +199,10 @@ namespace DemoInfo
 		/// </summary>
 		public event EventHandler<PlayerHurtEventArgs> PlayerHurt;
 
+		/// <summary>
+		/// Occurs when the buy time ended
+		/// </summary>
+		public event EventHandler<BuyTimeEndedEventArgs> BuyTime;
 
 		/// <summary>
 		/// Occurs when the player object is first updated to reference all the necessary information
@@ -1166,6 +1170,12 @@ namespace DemoInfo
 		{
 			if (PlayerKilled != null)
 				PlayerKilled(this, kill);
+		}
+
+		internal void RaiseBuyTimeEnded(BuyTimeEndedEventArgs buytime)
+		{
+			if (BuyTime != null)
+				BuyTime(this, buytime);
 		}
 
 		internal void RaisePlayerHurt(PlayerHurtEventArgs hurt)
