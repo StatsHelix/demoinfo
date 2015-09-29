@@ -692,7 +692,7 @@ namespace DemoInfo
 						this.tID = teamID;
 						TScore = score;
 						foreach(var p in PlayerInformations.Where(a => a != null && a.TeamID == teamID))
-							p.Team = Team.CounterTerrorist;
+							p.Team = Team.Terrorist;
 					}
 				};
 
