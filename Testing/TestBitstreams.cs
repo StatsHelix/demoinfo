@@ -301,21 +301,18 @@ namespace Testing
 				switch (rng.Next(2 + ((remainingStack.Count > 0) ? 1 : 0))) {
 				case 0: // begin new chunk
 					int chunksize = Math.Min(rng.Next(5000 * 8), remaining);
-					Console.WriteLine("BeginChunk({0})", chunksize);
 					dbgAll.BeginChunk(chunksize);
 					remainingStack.Push(remaining - chunksize);
 					remaining = chunksize;
 					break;
 				case 1: // read stuff
 					int blocksize = Math.Min(rng.Next(5000 * 8), remaining);
-					Console.WriteLine("ReadBits({0})", blocksize);
 					dbgAll.ReadBits(blocksize);
 					remaining -= blocksize;
 					break;
 				case 2: // end current chunk
 					dbgAll.EndChunk();
 					remaining = remainingStack.Pop();
-					Console.WriteLine("EndChunk(); remaining={0}", remaining);
 					break;
 				default:
 					throw new NotImplementedException();
