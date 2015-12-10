@@ -539,6 +539,9 @@ namespace DemoInfo
 				case "usp_silencer_off":
 					weapon = EquipmentElement.USP;
 					break;
+				case "revolver":
+					weapon = EquipmentElement.Revolver;
+					break;
 				case "scar17"://These crash the game when given via give weapon_[mp5navy|...], and cannot be purchased ingame.
 				case "sg550"://yet the server-classes are networked, so I need to resolve them. 
 				case "mp5navy": 
@@ -572,6 +575,7 @@ namespace DemoInfo
 		Tec9 = 7,
 		CZ = 8,
 		USP = 9,
+		Revolver = 10,
 
 		//SMGs
 		MP7 = 101,
