@@ -395,27 +395,33 @@ namespace DemoInfo
 		{
 			EquipmentElement weapon = EquipmentElement.Unknown;
 
-			if (OriginalString.Contains ("knife") || OriginalString == "bayonet") {
+			if (OriginalString.Contains ("knife") || OriginalString == "bayonet" || OriginalString == "weapon_bayonet") {
 				weapon = EquipmentElement.Knife;
 			}
 
 			if (weapon == EquipmentElement.Unknown) {
 				switch (OriginalString) {
+				case "weapon_ak47":
 				case "ak47":
-					weapon = EquipmentElement.AK47;
+				case "manifest":
+						weapon = EquipmentElement.AK47;
 					break;
+				case "weapon_aug":
 				case "aug":
 					weapon = EquipmentElement.AUG;
 					break;
+				case "weapon_awp":
 				case "awp":
 					weapon = EquipmentElement.AWP;
 					break;
+				case "weapon_bizon":
 				case "bizon":
 					weapon = EquipmentElement.Bizon;
 					break;
 				case "c4":
 					weapon = EquipmentElement.Bomb;
 					break;
+				case "weapon_deagle":
 				case "deagle":
 					weapon = EquipmentElement.Deagle;
 					break;
@@ -423,31 +429,38 @@ namespace DemoInfo
 				case "decoygrenade":
 					weapon = EquipmentElement.Decoy;
 					break;
+				case "weapon_elite":
 				case "elite":
 					weapon = EquipmentElement.DualBarettas;
 					break;
+				case "weapon_famas":
 				case "famas":
 					weapon = EquipmentElement.Famas;
 					break;
+				case "weapon_fiveseven":
 				case "fiveseven":
 					weapon = EquipmentElement.FiveSeven;
 					break;
 				case "flashbang":
 					weapon = EquipmentElement.Flash;
 					break;
+				case "weapon_g3sg1":
 				case "g3sg1":
 					weapon = EquipmentElement.G3SG1;
 					break;
+				case "weapon_galilar":
 				case "galil":
 				case "galilar":
 					weapon = EquipmentElement.Gallil;
 					break;
+				case "weapon_glock":
 				case "glock":
 					weapon = EquipmentElement.Glock;
 					break;
 				case "hegrenade":
 					weapon = EquipmentElement.HE;
 					break;
+				case "weapon_hkp2000":
 				case "hkp2000":
 					weapon = EquipmentElement.P2000;
 					break;
@@ -455,79 +468,100 @@ namespace DemoInfo
 				case "incendiarygrenade":
 					weapon = EquipmentElement.Incendiary;
 					break;
+				case "weapon_m249":
 				case "m249":
 					weapon = EquipmentElement.M249;
 					break;
+				case "weapon_m4a1":
 				case "m4a1":
 					weapon = EquipmentElement.M4A4;
 					break;
+				case "weapon_mac10":
 				case "mac10":
 					weapon = EquipmentElement.Mac10;
 					break;
+				case "weapon_mag7":
 				case "mag7":
 					weapon = EquipmentElement.Swag7;
-					break;
-				case "manifest":
-					weapon = EquipmentElement.AK47;
 					break;
 				case "molotov":
 				case "molotovgrenade":
 					weapon = EquipmentElement.Molotov;
 					break;
+				case "weapon_mp7":
 				case "mp7":
 					weapon = EquipmentElement.MP7;
 					break;
+				case "weapon_mp9":
 				case "mp9":
 					weapon = EquipmentElement.MP9;
 					break;
+				case "weapon_negev":
 				case "negev":
 					weapon = EquipmentElement.Negev;
 					break;
+				case "weapon_nova":
 				case "nova":
 					weapon = EquipmentElement.Nova;
 					break;
+				case "weapon_p250":
 				case "p250":
 					weapon = EquipmentElement.P250;
 					break;
+				case "weapon_p90":
 				case "p90":
 					weapon = EquipmentElement.P90;
 					break;
+				case "weapon_sawedoff":
 				case "sawedoff":
 					weapon = EquipmentElement.SawedOff;
 					break;
+				case "weapon_scar20":
 				case "scar20":
 					weapon = EquipmentElement.Scar20;
 					break;
+				case "weapon_sg556":
 				case "sg556":
 					weapon = EquipmentElement.SG556;
 					break;
 				case "smokegrenade":
 					weapon = EquipmentElement.Smoke;
 					break;
+				case "weapon_ssg08":
 				case "ssg08":
 					weapon = EquipmentElement.Scout;
 					break;
+				case "weapon_taser":
 				case "taser":
 					weapon = EquipmentElement.Zeus;
 					break;
+				case "weapon_tec9":
 				case "tec9":
 					weapon = EquipmentElement.Tec9;
 					break;
+				case "weapon_ump45":
 				case "ump45":
 					weapon = EquipmentElement.UMP;
 					break;
+				case "weapon_xm1014":
 				case "xm1014":
 					weapon = EquipmentElement.XM1014;
 					break;
+				case "weapon_m4a1_silencer":
+				case "weapon_m4a1_silencer_off":
 				case "m4a1_silencer":
 				case "m4a1_silencer_off":
 					weapon = EquipmentElement.M4A1;
 					break;
+				case "weapon_cz75a":
 				case "cz75a":
 					weapon = EquipmentElement.CZ;
 					break;
+				case "weapon_usp_silencer":
+				case "weapon_usp_silencer_off":
 				case "usp":
 				case "usp_silencer":
+				case "usp_silencer_off":
 					weapon = EquipmentElement.USP;
 					break;
 				case "world":
@@ -536,9 +570,7 @@ namespace DemoInfo
 				case "inferno":
 					weapon = EquipmentElement.Incendiary;
 					break;
-				case "usp_silencer_off":
-					weapon = EquipmentElement.USP;
-					break;
+				case "weapon_revolver":
 				case "revolver":
 					weapon = EquipmentElement.Revolver;
 					break;
