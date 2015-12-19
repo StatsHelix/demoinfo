@@ -391,9 +391,15 @@ namespace DemoInfo
 			SkinID = skin;
 		}
 
+		const string WEAPON_PREFIX = "weapon_";
+
 		public static EquipmentElement MapEquipment(string OriginalString)
 		{
 			EquipmentElement weapon = EquipmentElement.Unknown;
+
+			OriginalString = OriginalString.StartsWith(WEAPON_PREFIX)
+				? OriginalString.Substring(WEAPON_PREFIX.Length)
+				: OriginalString;
 
 			if (OriginalString.Contains ("knife") || OriginalString == "bayonet") {
 				weapon = EquipmentElement.Knife;
@@ -402,6 +408,7 @@ namespace DemoInfo
 			if (weapon == EquipmentElement.Unknown) {
 				switch (OriginalString) {
 				case "ak47":
+				case "manifest":
 					weapon = EquipmentElement.AK47;
 					break;
 				case "aug":
@@ -467,9 +474,6 @@ namespace DemoInfo
 				case "mag7":
 					weapon = EquipmentElement.Swag7;
 					break;
-				case "manifest":
-					weapon = EquipmentElement.AK47;
-					break;
 				case "molotov":
 				case "molotovgrenade":
 					weapon = EquipmentElement.Molotov;
@@ -528,6 +532,7 @@ namespace DemoInfo
 					break;
 				case "usp":
 				case "usp_silencer":
+				case "usp_silencer_off":
 					weapon = EquipmentElement.USP;
 					break;
 				case "world":
@@ -535,9 +540,6 @@ namespace DemoInfo
 					break;
 				case "inferno":
 					weapon = EquipmentElement.Incendiary;
-					break;
-				case "usp_silencer_off":
-					weapon = EquipmentElement.USP;
 					break;
 				case "revolver":
 					weapon = EquipmentElement.Revolver;
