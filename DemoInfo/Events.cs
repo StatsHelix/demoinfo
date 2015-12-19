@@ -408,7 +408,6 @@ namespace DemoInfo
 			if (weapon == EquipmentElement.Unknown) {
 				switch (OriginalString) {
 				case "ak47":
-				case "manifest":
 					weapon = EquipmentElement.AK47;
 					break;
 				case "aug":
