@@ -511,6 +511,7 @@ namespace DemoInfo
 				case "ssg08":
 					weapon = EquipmentElement.Scout;
 					break;
+				case "taser":
 				case "taser 34":
 					weapon = EquipmentElement.Zeus;
 					break;
@@ -589,13 +590,13 @@ namespace DemoInfo
 		//Heavy
 		SawedOff = 201,
 		Nova = 202,
-		Swag7 = 203,
+		Mag7 = 203,
 		XM1014 = 204,
 		M249 = 205,
 		Negev = 206,
 
 		//Rifle
-		Gallil = 301,
+		Galil = 301,
 		Famas = 302,
 		AK47 = 303,
 		M4A4 = 304,
