@@ -446,7 +446,7 @@ namespace DemoInfo
 					break;
 				case "galil":
 				case "galilar":
-					weapon = EquipmentElement.Gallil;
+					weapon = EquipmentElement.Galil;
 					break;
 				case "glock":
 					weapon = EquipmentElement.Glock;
@@ -471,7 +471,7 @@ namespace DemoInfo
 					weapon = EquipmentElement.Mac10;
 					break;
 				case "mag7":
-					weapon = EquipmentElement.Swag7;
+					weapon = EquipmentElement.Mag7;
 					break;
 				case "molotov":
 				case "molotovgrenade":
@@ -510,7 +510,7 @@ namespace DemoInfo
 				case "ssg08":
 					weapon = EquipmentElement.Scout;
 					break;
-				case "taser":
+				case "taser 34":
 					weapon = EquipmentElement.Zeus;
 					break;
 				case "tec9":
