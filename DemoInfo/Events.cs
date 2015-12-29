@@ -507,6 +507,7 @@ namespace DemoInfo
 				case "smokegrenade":
 					weapon = EquipmentElement.Smoke;
 					break;
+				case "scout":
 				case "ssg08":
 					weapon = EquipmentElement.Scout;
 					break;
@@ -547,7 +548,6 @@ namespace DemoInfo
 				case "sg550"://yet the server-classes are networked, so I need to resolve them. 
 				case "mp5navy": 
 				case "p228":
-				case "scout":
 				case "sg552":
 				case "tmp":
 					weapon = EquipmentElement.Unknown;
