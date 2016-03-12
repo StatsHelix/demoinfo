@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace DemoInfo.DP.FastNetmessages
 {
@@ -53,20 +54,9 @@ namespace DemoInfo.DP.FastNetmessages
 
 		private void Raise(DemoParser parser)
 		{
-			Player sender = null;
-			// Find the sender
-			foreach (KeyValuePair<int, Player> keyValuePair in parser.Players)
-			{
-				if (keyValuePair.Value.Name == Params[0])
-				{
-					sender = keyValuePair.Value;
-					break;
-				}
-			}
-
 			SayText2EventArgs e = new SayText2EventArgs
 			{
-				Sender = sender,
+				Sender = parser.Players.Values.FirstOrDefault(x => x.Name == Params[0]),
 				Text = Params[1],
 				IsChat = Chat,
 				IsChatAll = TextAllChat
