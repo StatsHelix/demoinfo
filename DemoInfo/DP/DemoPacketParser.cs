@@ -6,7 +6,9 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+#if !SLOW_PROTOBUF
 using DemoInfo.DP.FastNetmessages;
+#endif
 
 namespace DemoInfo.DP
 {

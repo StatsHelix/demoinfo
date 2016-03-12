@@ -7,13 +7,14 @@ namespace DemoInfo.DP.FastNetmessages
 	/// <summary>
 	/// FastNetMessage adaptation of CCSUsrMsg_SayText2 protobuf message
 	/// </summary>
-	public class SayText2
+	public struct SayText2
 	{
 		public int EntIdx;
 		private int _chat;
 		public bool Chat => _chat != 0;
 		private int _textAllChat;
 		public bool TextAllChat => _textAllChat != 0;
+		// Params is a 4 length array but only 2 are used [0] = sender nickname [1] = message text
 		public IList<string> Params;
 		public string MsgName;
 
@@ -54,9 +55,12 @@ namespace DemoInfo.DP.FastNetmessages
 
 		private void Raise(DemoParser parser)
 		{
+			// struct methods are called with a hidden ref to "this",
+			// I have to make a local copy to be able to use it in the lambda expression
+			IList<string> parameters = Params;
 			SayText2EventArgs e = new SayText2EventArgs
 			{
-				Sender = parser.Players.Values.FirstOrDefault(x => x.Name == Params[0]),
+				Sender = parser.Players.Values.FirstOrDefault(x => x.Name == parameters[0]),
 				Text = Params[1],
 				IsChat = Chat,
 				IsChatAll = TextAllChat
