@@ -59,7 +59,7 @@ namespace DemoInfo.DP.FastNetmessages
 			{
 				if (keyValuePair.Value.Name == Params[0])
 				{
-					sender = parser.Players[keyValuePair.Key];
+					sender = keyValuePair.Value;
 					break;
 				}
 			}
