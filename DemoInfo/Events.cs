@@ -475,6 +475,7 @@ namespace DemoInfo
 					break;
 				case "molotov":
 				case "molotovgrenade":
+				case "molotov_projectile":
 					weapon = EquipmentElement.Molotov;
 					break;
 				case "mp7":
