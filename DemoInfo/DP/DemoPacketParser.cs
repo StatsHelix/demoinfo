@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using DemoInfo.DP.FastNetmessages;
 
 namespace DemoInfo.DP
 {
@@ -45,6 +46,8 @@ namespace DemoInfo.DP
 					new UpdateStringTable().Parse(bitstream, demo);
 				} else if (cmd == (int)NET_Messages.net_Tick) { //and all this other stuff
 						new NETTick().Parse(bitstream, demo);
+				} else if (cmd == (int)SVC_Messages.svc_UserMessage) {
+					new UserMessage().Parse(bitstream, demo);
 				} else {
 					//You can use this flag to see what information the other packets contain, 
 					//if you want. Then you can look into the objects. Has some advnatages, and some disdavantages (mostly speed), 
