@@ -342,6 +342,28 @@ namespace Testing
 			}
 			Assert.Fail("Should have thrown");
 		}
+
+		[Test]
+		public void TestStreamEndChunkBoundary()
+		{
+			dbgAll.BeginChunk(data.Length * 8);
+			Assert.IsFalse(dbgAll.ChunkFinished);
+			dbgAll.BeginChunk(data.Length * 8);
+			Assert.IsFalse(dbgAll.ChunkFinished);
+			dbgAll.EndChunk();
+			Assert.IsTrue(dbgAll.ChunkFinished);
+			dbgAll.EndChunk();
+		}
+
+		[Test]
+		public void TestStreamEndChunkBoundaryData()
+		{
+			dbgAll.BeginChunk(data.Length * 8);
+			Assert.IsFalse(dbgAll.ChunkFinished);
+			dbgAll.ReadBytes(data.Length);
+			Assert.IsTrue(dbgAll.ChunkFinished);
+			dbgAll.EndChunk();
+		}
 	}
 }
 
