@@ -501,6 +501,9 @@ namespace DemoInfo
 			if (header.Filestamp != "HL2DEMO")
 				throw new InvalidDataException("Invalid File-Type - expecting HL2DEMO");
 
+			if (header.GameDirectory != "csgo")
+				throw new InvalidDataException("Invalid Demo-Game");
+
 			if (header.Protocol != 4)
 				throw new InvalidDataException("Invalid Demo-Protocol");
 
