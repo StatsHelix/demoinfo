@@ -455,13 +455,13 @@ namespace DemoInfo
 		/// it will have 16 after one second. 
 		/// </summary>
 		/// <value>The current tick.</value>
-		public int CurrentTick { get; private set; }
+		public int CurrentTick { get; internal set; }
 
 		/// <summary>
 		/// The current ingame-tick as reported by the demo-file. 
 		/// </summary>
 		/// <value>The current tick.</value>
-		public int IngameTick { get; internal set; }
+		public int IngameTick { get; private set; }
 
 		/// <summary>
 		/// How far we've advanced in the demo in seconds. 
@@ -598,7 +598,7 @@ namespace DemoInfo
 			IngameTick = (int)BitStream.ReadInt(32); // tick number
 			BitStream.ReadByte(); // player slot
 
-			this.CurrentTick++; // = TickNum;
+			CurrentTick++;
 
 			switch (command) {
 			case DemoCommand.Synctick:
