@@ -447,7 +447,7 @@ namespace DemoInfo
 					break;
 				case "galil":
 				case "galilar":
-					weapon = EquipmentElement.Gallil;
+					weapon = EquipmentElement.Galil;
 					break;
 				case "glock":
 					weapon = EquipmentElement.Glock;
@@ -472,7 +472,7 @@ namespace DemoInfo
 					weapon = EquipmentElement.Mac10;
 					break;
 				case "mag7":
-					weapon = EquipmentElement.Swag7;
+					weapon = EquipmentElement.Mag7;
 					break;
 				case "molotov":
 				case "molotovgrenade":
@@ -509,10 +509,12 @@ namespace DemoInfo
 				case "smokegrenade":
 					weapon = EquipmentElement.Smoke;
 					break;
+				case "scout":
 				case "ssg08":
 					weapon = EquipmentElement.Scout;
 					break;
 				case "taser":
+				case "taser 34":
 					weapon = EquipmentElement.Zeus;
 					break;
 				case "tec9":
@@ -549,7 +551,6 @@ namespace DemoInfo
 				case "sg550"://yet the server-classes are networked, so I need to resolve them. 
 				case "mp5navy": 
 				case "p228":
-				case "scout":
 				case "sg552":
 				case "tmp":
 					weapon = EquipmentElement.Unknown;
@@ -591,13 +592,13 @@ namespace DemoInfo
 		//Heavy
 		SawedOff = 201,
 		Nova = 202,
-		Swag7 = 203,
+		Mag7 = 203,
 		XM1014 = 204,
 		M249 = 205,
 		Negev = 206,
 
 		//Rifle
-		Gallil = 301,
+		Galil = 301,
 		Famas = 302,
 		AK47 = 303,
 		M4A4 = 304,
