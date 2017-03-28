@@ -104,7 +104,10 @@ namespace DemoInfo
 			me.FlashDuration = FlashDuration;
 
 			me.Team = Team;
-
+                       
+			me.ActiveWeaponID = ActiveWeaponID;
+                        me.rawWeapons = new Dictionary<int, Equipment>(rawWeapons);
+			
 			me.HasDefuseKit = HasDefuseKit;
 			me.HasHelmet = HasHelmet;
 
