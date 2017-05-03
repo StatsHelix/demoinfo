@@ -245,6 +245,18 @@ namespace DemoInfo
 		public Hitgroup Hitgroup { get; set; }
 	}
 
+	public class PickupItemEventArgs : EventArgs
+	{
+		public Player Player { get; set; }
+		public Equipment Weapon { get; set; }
+	}
+
+	public class DropItemEventArgs : EventArgs
+	{
+		public Player Player { get; set; }
+		public Equipment Weapon { get; set; }
+	}
+
 	public class PlayerBindEventArgs : EventArgs
 	{
 		public Player Player {get; set; }
@@ -381,6 +393,7 @@ namespace DemoInfo
 
 			this.Weapon = MapEquipment (originalString);
 
+
 		}
 
 		internal Equipment (string originalString, string skin)
@@ -405,7 +418,7 @@ namespace DemoInfo
 			if (OriginalString.Contains ("knife") || OriginalString == "bayonet") {
 				weapon = EquipmentElement.Knife;
 			}
-
+			
 			if (weapon == EquipmentElement.Unknown) {
 				switch (OriginalString) {
 				case "ak47":

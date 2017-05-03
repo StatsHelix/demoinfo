@@ -205,6 +205,16 @@ namespace DemoInfo
 		/// </summary>
 		public event EventHandler<PlayerHurtEventArgs> PlayerHurt;
 
+		/// <summary>
+		/// Occurs when player picks up an item, including grenades and bomb
+		/// Hint: Triggers on spawns and buys as well as picking up items off the ground
+		/// </summary>
+		public event EventHandler<PickupItemEventArgs> PickupItem;
+
+		/// <summary>
+		/// Occurs when player drops a weapon, including grenades and bomb
+		/// </summary>
+		public event EventHandler<DropItemEventArgs> DropItem;
 
 		/// <summary>
 		/// Occurs when the player object is first updated to reference all the necessary information
@@ -541,6 +551,7 @@ namespace DemoInfo
 		/// <returns><c>true</c>, if this wasn't the last tick, <c>false</c> otherwise.</returns>
 		public bool ParseNextTick()
 		{
+
 			if (Header == null)
 				throw new InvalidOperationException ("You need to call ParseHeader first before you call ParseToEnd or ParseNextTick!");
 
@@ -576,6 +587,17 @@ namespace DemoInfo
 						bind.Player = p;
 						RaisePlayerBind(bind);
 					}
+
+					while (p.newWeapons.Count > 0){
+						var weapon = p.newWeapons.Dequeue();
+						if (weapon.Weapon != EquipmentElement.Knife){ 
+							PickupItemEventArgs pickupitem = new PickupItemEventArgs();
+							pickupitem.Player = p;
+							pickupitem.Weapon = weapon;
+							RaisePickupItem(pickupitem);
+						}
+					}
+
 				}
 			}
 
@@ -901,20 +923,26 @@ namespace DemoInfo
 			if (playerEntity.Props.All (a => a.Entry.PropertyName != "m_hMyWeapons.000"))
 				weaponPrefix = "bcc_nonlocaldata.m_hMyWeapons.";
 
-
 			int[] cache = new int[MAXWEAPONS];
-
+			
 			for(int i = 0; i < MAXWEAPONS; i++)
 			{
 				int iForTheMethod = i; //Because else i is passed as reference to the delegate. 
-
+				
 				playerEntity.FindProperty(weaponPrefix + i.ToString().PadLeft(3, '0')).IntRecived += (sender, e) => {
-
 					int index = e.Value & INDEX_MASK;
 
 					if (index != INDEX_MASK) {
 						if(cache[iForTheMethod] != 0) //Player already has a weapon in this slot. 
 						{
+							if (p.rawWeapons[cache[iForTheMethod]].Weapon != EquipmentElement.Knife)
+							{ 
+								DropItemEventArgs dropitem = new DropItemEventArgs();
+								dropitem.Player = p;
+								dropitem.Weapon = p.rawWeapons[cache[iForTheMethod]];
+								RaiseDropItem(dropitem);
+							}
+							
 							p.rawWeapons.Remove(cache[iForTheMethod]);
 							cache[iForTheMethod] = 0;
 						}
@@ -926,7 +954,18 @@ namespace DemoInfo
 						{
 							p.rawWeapons[cache[iForTheMethod]].Owner = null;
 						}
-						p.rawWeapons.Remove(cache[iForTheMethod]);
+						if (p.rawWeapons.ContainsKey(cache[iForTheMethod]))
+						{
+							if (p.rawWeapons[cache[iForTheMethod]].Weapon != EquipmentElement.Knife)
+							{
+								DropItemEventArgs dropitem = new DropItemEventArgs();
+								dropitem.Player = p;
+								dropitem.Weapon = p.rawWeapons[cache[iForTheMethod]];
+								RaiseDropItem(dropitem);
+							}
+
+							p.rawWeapons.Remove(cache[iForTheMethod]);
+						}
 
 						cache[iForTheMethod] = 0;
 					}
@@ -942,8 +981,6 @@ namespace DemoInfo
 					p.AmmoLeft [iForTheMethod] = e.Value;
 				};
 			}
-
-
 		}
 
 		private void MapEquipment()
@@ -977,12 +1014,14 @@ namespace DemoInfo
 		}
 
 		private bool AttributeWeapon(int weaponEntityIndex, Player p)
-		{
+		{			
 			var weapon = weapons[weaponEntityIndex];
 			weapon.Owner = p;
 			p.rawWeapons [weaponEntityIndex] = weapon;
+			p.newWeapons.Enqueue(weapon);
 
 			return true;
+
 		}
 
 		void HandleWeapons ()
@@ -1331,6 +1370,18 @@ namespace DemoInfo
 				BombAbortDefuse(this, args);
 		}
 
+		internal void RaisePickupItem(PickupItemEventArgs args)
+		{
+			if (PickupItem != null)
+				PickupItem(this, args);
+		}
+
+		internal void RaiseDropItem(DropItemEventArgs args)
+		{
+			if (DropItem != null)
+				DropItem(this, args);
+		}
+
 		internal void RaiseSayText(SayTextEventArgs args)
 		{
 			if (SayText != null)
@@ -1396,6 +1447,8 @@ namespace DemoInfo
 			this.SmokeNadeEnded = null;
 			this.SmokeNadeStarted = null;
 			this.WeaponFired = null;
+			this.DropItem = null;
+			this.PickupItem = null;
 
 			Players.Clear ();
 		}
