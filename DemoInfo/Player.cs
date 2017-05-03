@@ -21,7 +21,6 @@ namespace DemoInfo
 
 		public int Armor { get; set; }
 
-
 		public Vector LastAlivePosition { get; set; }
 
 		public Vector Velocity { get; set; }
@@ -72,6 +71,8 @@ namespace DemoInfo
 		public bool HasHelmet { get; set; }
 
 		internal int TeamID;
+
+		internal Equipment FlashHandle;
 
 		internal int[] AmmoLeft = new int[32];
 

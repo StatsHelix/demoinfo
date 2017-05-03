@@ -245,13 +245,13 @@ namespace DemoInfo
 		public Hitgroup Hitgroup { get; set; }
 	}
 
-	public class PickupItemEventArgs : EventArgs
+	public class PickupWeaponEventArgs : EventArgs
 	{
 		public Player Player { get; set; }
 		public Equipment Weapon { get; set; }
 	}
 
-	public class DropItemEventArgs : EventArgs
+	public class DropWeaponEventArgs : EventArgs
 	{
 		public Player Player { get; set; }
 		public Equipment Weapon { get; set; }

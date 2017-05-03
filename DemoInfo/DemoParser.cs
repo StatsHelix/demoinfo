@@ -207,14 +207,15 @@ namespace DemoInfo
 
 		/// <summary>
 		/// Occurs when player picks up an item, including grenades and bomb
-		/// Hint: Triggers on spawns and buys as well as picking up items off the ground
+		/// Hint: Raised on spawns and buys as well as picking up items.
 		/// </summary>
-		public event EventHandler<PickupItemEventArgs> PickupItem;
+		public event EventHandler<PickupWeaponEventArgs> PickupWeapon;
 
 		/// <summary>
 		/// Occurs when player drops a weapon, including grenades and bomb
+		/// Hint: Raised on grenade throws and player deaths as well.
 		/// </summary>
-		public event EventHandler<DropItemEventArgs> DropItem;
+		public event EventHandler<DropWeaponEventArgs> DropWeapon;
 
 		/// <summary>
 		/// Occurs when the player object is first updated to reference all the necessary information
@@ -590,11 +591,15 @@ namespace DemoInfo
 
 					while (p.newWeapons.Count > 0){
 						var weapon = p.newWeapons.Dequeue();
-						if (weapon.Weapon != EquipmentElement.Knife){ 
-							PickupItemEventArgs pickupitem = new PickupItemEventArgs();
-							pickupitem.Player = p;
-							pickupitem.Weapon = weapon;
-							RaisePickupItem(pickupitem);
+						if (weapon.Weapon != EquipmentElement.Knife) { 
+							PickupWeaponEventArgs pickupweapon = new PickupWeaponEventArgs();
+							pickupweapon.Player = p;
+							pickupweapon.Weapon = weapon;
+							RaisePickupWeapon(pickupweapon);
+
+							if (weapon.Weapon == EquipmentElement.Flash) {
+								p.FlashHandle = weapon;
+							}
 						}
 					}
 
@@ -937,10 +942,10 @@ namespace DemoInfo
 						{
 							if (p.rawWeapons[cache[iForTheMethod]].Weapon != EquipmentElement.Knife)
 							{ 
-								DropItemEventArgs dropitem = new DropItemEventArgs();
-								dropitem.Player = p;
-								dropitem.Weapon = p.rawWeapons[cache[iForTheMethod]];
-								RaiseDropItem(dropitem);
+								DropWeaponEventArgs dropweapon = new DropWeaponEventArgs();
+								dropweapon.Player = p;
+								dropweapon.Weapon = p.rawWeapons[cache[iForTheMethod]];
+								RaiseDropWeapon(dropweapon);
 							}
 							
 							p.rawWeapons.Remove(cache[iForTheMethod]);
@@ -958,10 +963,10 @@ namespace DemoInfo
 						{
 							if (p.rawWeapons[cache[iForTheMethod]].Weapon != EquipmentElement.Knife)
 							{
-								DropItemEventArgs dropitem = new DropItemEventArgs();
-								dropitem.Player = p;
-								dropitem.Weapon = p.rawWeapons[cache[iForTheMethod]];
-								RaiseDropItem(dropitem);
+								DropWeaponEventArgs dropweapon = new DropWeaponEventArgs();
+								dropweapon.Player = p;
+								dropweapon.Weapon = p.rawWeapons[cache[iForTheMethod]];
+								RaiseDropWeapon(dropweapon);
 							}
 
 							p.rawWeapons.Remove(cache[iForTheMethod]);
@@ -979,6 +984,10 @@ namespace DemoInfo
 
 				playerEntity.FindProperty ("m_iAmmo." + i.ToString ().PadLeft (3, '0')).IntRecived += (sender, e) => {
 					p.AmmoLeft [iForTheMethod] = e.Value;
+
+					if (p.FlashHandle != null && p.FlashHandle.AmmoType == iForTheMethod && e.Value == 2) {
+						p.newWeapons.Enqueue(p.FlashHandle);
+					}
 				};
 			}
 		}
@@ -1370,16 +1379,16 @@ namespace DemoInfo
 				BombAbortDefuse(this, args);
 		}
 
-		internal void RaisePickupItem(PickupItemEventArgs args)
+		internal void RaisePickupWeapon(PickupWeaponEventArgs args)
 		{
-			if (PickupItem != null)
-				PickupItem(this, args);
+			if (PickupWeapon != null)
+				PickupWeapon(this, args);
 		}
 
-		internal void RaiseDropItem(DropItemEventArgs args)
+		internal void RaiseDropWeapon(DropWeaponEventArgs args)
 		{
-			if (DropItem != null)
-				DropItem(this, args);
+			if (DropWeapon != null)
+				DropWeapon(this, args);
 		}
 
 		internal void RaiseSayText(SayTextEventArgs args)
@@ -1447,8 +1456,8 @@ namespace DemoInfo
 			this.SmokeNadeEnded = null;
 			this.SmokeNadeStarted = null;
 			this.WeaponFired = null;
-			this.DropItem = null;
-			this.PickupItem = null;
+			this.DropWeapon = null;
+			this.PickupWeapon = null;
 
 			Players.Clear ();
 		}
