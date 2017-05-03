@@ -475,6 +475,11 @@ namespace DemoInfo
 		public int CurrentTick { get; private set; }
 
 		/// <summary>
+		/// The tickrate *of the server*
+		/// </summary>
+		public float TickInterval { get; internal set; }
+
+		/// <summary>
 		/// The current ingame-tick as reported by the demo-file. 
 		/// </summary>
 		/// <value>The current tick.</value>
