@@ -35,6 +35,11 @@ namespace DemoInfo
 		public event EventHandler<HeaderParsedEventArgs> HeaderParsed;
 
 		/// <summary>
+		/// Raised when header data is corrupted and timings are zero and null.
+		/// </summary>
+		public event EventHandler<HeaderParsedEventArgs> HeaderCorrupted;
+
+		/// <summary>
 		/// Occurs when the match started, so when the "begin_new_match"-GameEvent is dropped. 
 		/// This usually right before the freezetime of the 1st round. Be careful, since the players
 		/// usually still have warmup-money when this drops.
@@ -531,6 +536,15 @@ namespace DemoInfo
 
 			Header = header;
 
+			if (header.PlaybackTime == 0)
+			{				
+				Console.WriteLine("WARNING: The header for this demo file is corrupted.  TickRate, TickTime, ParsingProgress, CurrentTime will be 0 for the first 50 ticks.  PlaybackFrames, PlaybackTicks, PlaybackTime will always be 0.  HeaderCorrupted event triggered.");
+
+				if (HeaderCorrupted != null)
+				{
+					HeaderCorrupted(this, new HeaderParsedEventArgs(Header));
+				}				
+			}
 
 			if (HeaderParsed != null)
 				HeaderParsed(this, new HeaderParsedEventArgs(Header));
@@ -1467,6 +1481,7 @@ namespace DemoInfo
 			this.FireNadeWithOwnerStarted = null;
 			this.FlashNadeExploded = null;
 			this.HeaderParsed = null;
+			this.HeaderCorrupted = null;
 			this.MatchStarted = null;
 			this.NadeReachedTarget = null;
 			this.PlayerKilled = null;
