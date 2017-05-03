@@ -265,6 +265,16 @@ namespace DemoInfo
 		public DemoHeader Header { get; private set; }
 
 		/// <summary>
+		/// True when header is corrupted
+		/// </summary>
+		public bool IsHeaderCorrupted { get; private set; }
+
+		/// <summary>
+		/// Used to sample gap in ticks when header is corrupted
+		/// </summary>
+		internal List<int> TickGaps = new List<int>();
+
+		/// <summary>
 		/// Gets the participants of this game
 		/// </summary>
 		/// <value>The participants.</value>
@@ -453,15 +463,16 @@ namespace DemoInfo
 		/// </summary>
 		/// <value>The tick rate.</value>
 		public float TickRate {
-			get { return this.Header.PlaybackFrames / this.Header.PlaybackTime; }
+			get { return IsHeaderCorrupted ? 1/_ticktime : this.Header.PlaybackFrames / this.Header.PlaybackTime; }
 		}
 
 		/// <summary>
 		/// How long a tick of the demo is in s^-1
 		/// </summary>
 		/// <value>The tick time.</value>
+		private float _ticktime;
 		public float TickTime {
-			get { return this.Header.PlaybackTime / this.Header.PlaybackFrames; }
+			get { return IsHeaderCorrupted ? _ticktime : this.Header.PlaybackTime / this.Header.PlaybackFrames; }
 		}
 
 		/// <summary>
@@ -535,10 +546,11 @@ namespace DemoInfo
 				throw new InvalidDataException("Invalid Demo-Protocol");
 
 			Header = header;
+			IsHeaderCorrupted = (header.PlaybackTime == 0);
 
-			if (header.PlaybackTime == 0)
+			if (IsHeaderCorrupted)
 			{				
-				Console.WriteLine("WARNING: The header for this demo file is corrupted.  TickRate, TickTime, ParsingProgress, CurrentTime will be 0 for the first 50 ticks.  PlaybackFrames, PlaybackTicks, PlaybackTime will always be 0.  HeaderCorrupted event triggered.");
+				Console.WriteLine("WARNING: The header for this demo file is corrupted.  TickRate, TickTime, CurrentTime will be 0 for ticks at the start of the demo.  ParsingProgress, PlaybackFrames, PlaybackTicks, PlaybackTime will always be 0.  HeaderCorrupted event triggered.");
 
 				if (HeaderCorrupted != null)
 				{
@@ -571,6 +583,25 @@ namespace DemoInfo
 			}
 		}
 
+		private void FixTickTime()
+		{
+			// at the beginning of demos the tickgap can be erratic, so make sure we have 10 consecutive that are the same
+			int gap = TickGaps[1] - TickGaps[0];
+			bool isConsecutive = true;
+			for (int i = 1; i < TickGaps.Count - 1; i++) {
+				if (TickGaps[i + 1] - TickGaps[i] != gap)
+				{
+					TickGaps.Clear();
+					isConsecutive = false;
+					break;
+				}
+			}
+
+			if (isConsecutive) {
+				_ticktime = gap * TickInterval;
+			}
+		}
+
 		/// <summary>
 		/// Parses the next tick of the demo.
 		/// </summary>
@@ -579,6 +610,15 @@ namespace DemoInfo
 		{
 			if (Header == null)
 				throw new InvalidOperationException ("You need to call ParseHeader first before you call ParseToEnd or ParseNextTick!");
+
+			int consecutiveGaps = 10;
+			if (IsHeaderCorrupted && _ticktime == 0 && IngameTick > 20) {
+				if (TickGaps.Count < consecutiveGaps)
+					TickGaps.Add(IngameTick);
+				else if (TickGaps.Count == consecutiveGaps)	{
+					FixTickTime();
+				}
+			}
 
 			bool b = ParseTick();
 			
