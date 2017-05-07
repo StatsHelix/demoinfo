@@ -29,7 +29,6 @@ namespace DemoInfo.DP.Handler
 		public static void Apply(GameEvent rawEvent, DemoParser parser)
 		{
 			var descriptors = parser.GEH_Descriptors;
-			var blindPlayers = parser.GEH_BlindPlayers;
 
 			if (descriptors == null)
 				return;
@@ -183,15 +182,18 @@ namespace DemoInfo.DP.Handler
 
 				#region Nades
 			case "player_blind":
+				BlindEventArgs blind = new BlindEventArgs();
+
 				data = MapData(eventDescriptor, rawEvent);
-				if (parser.Players.ContainsKey((int)data["userid"]))
-					blindPlayers.Add(parser.Players[(int)data["userid"]]);
+				blind.Player = parser.Players[(int)data["userid"]];
+				blind.Attacker = parser.Players[(int)data["attacker"]];
+				blind.FlashDuration = (float)data["blind_duration"];
+
+				parser.RaiseBlind(blind);
 				break;
 			case "flashbang_detonate":
 				var args = FillNadeEvent<FlashEventArgs>(MapData(eventDescriptor, rawEvent), parser);
-				args.FlashedPlayers = blindPlayers.ToArray();
 				parser.RaiseFlashExploded(args);
-				blindPlayers.Clear();
 				break;
 			case "hegrenade_detonate":
 				parser.RaiseGrenadeExploded(FillNadeEvent<GrenadeEventArgs>(MapData(eventDescriptor, rawEvent), parser));
