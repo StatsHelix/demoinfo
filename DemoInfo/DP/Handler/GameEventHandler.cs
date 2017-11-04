@@ -128,7 +128,7 @@ namespace DemoInfo.DP.Handler
 				fire.Shooter = parser.Players.ContainsKey ((int)data ["userid"]) ? parser.Players [(int)data ["userid"]] : null;
 				fire.Weapon = new Equipment ((string)data ["weapon"]);
 
-				if (fire.Shooter != null && fire.Weapon.Class != EquipmentClass.Grenade) {
+				if (fire.Shooter != null && fire.Shooter.ActiveWeapon != null && fire.Weapon.Class != EquipmentClass.Grenade) {
 					fire.Weapon = fire.Shooter.ActiveWeapon;
 				}
 
