@@ -1047,6 +1047,20 @@ namespace DemoInfo
 						throw new InvalidDataException("Unknown weapon model");
 				};
 			}
+
+		    if (equipment.Weapon == EquipmentElement.Deagle)
+		    {
+		        e.Entity.FindProperty("m_nModelIndex").IntRecived += (sender2, e2) =>
+		        {
+		            equipment.OriginalString = modelprecache[e2.Value];
+		            if (modelprecache[e2.Value].Contains("_pist_deagle"))
+		                equipment.Weapon = EquipmentElement.Deagle; //BAM
+		            else if (modelprecache[e2.Value].Contains("_pist_revolver"))
+		                equipment.Weapon = EquipmentElement.Revolver;
+		            else
+		                throw new InvalidDataException("Unknown weapon model");
+		        };
+		    }
 		}
 
 		internal List<BoundingBoxInformation> triggers = new List<BoundingBoxInformation>();
