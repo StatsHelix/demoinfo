@@ -591,15 +591,13 @@ namespace DemoInfo
 
 					while (p.NewWeapons.Count > 0){
 						var weapon = p.NewWeapons.Dequeue();
-						if (weapon.Weapon != EquipmentElement.Knife) { 
-							PickupWeaponEventArgs pickupweapon = new PickupWeaponEventArgs();
-							pickupweapon.Player = p;
-							pickupweapon.Weapon = weapon;
-							RaisePickupWeapon(pickupweapon);
+						PickupWeaponEventArgs pickupweapon = new PickupWeaponEventArgs();
+						pickupweapon.Player = p;
+						pickupweapon.Weapon = weapon;
+						RaisePickupWeapon(pickupweapon);
 
-							if (weapon.Weapon == EquipmentElement.Flash) {
-								p.FlashHandle = weapon;
-							}
+						if (weapon.Weapon == EquipmentElement.Flash) {
+							p.FlashHandle = weapon;
 						}
 					}
 
@@ -940,13 +938,10 @@ namespace DemoInfo
 					if (index != INDEX_MASK) {
 						if(cache[iForTheMethod] != 0) //Player already has a weapon in this slot. 
 						{
-							if (p.rawWeapons[cache[iForTheMethod]].Weapon != EquipmentElement.Knife)
-							{ 
-								DropWeaponEventArgs dropweapon = new DropWeaponEventArgs();
-								dropweapon.Player = p;
-								dropweapon.Weapon = p.rawWeapons[cache[iForTheMethod]];
-								RaiseDropWeapon(dropweapon);
-							}
+							DropWeaponEventArgs dropweapon = new DropWeaponEventArgs();
+							dropweapon.Player = p;
+							dropweapon.Weapon = p.rawWeapons[cache[iForTheMethod]];
+							RaiseDropWeapon(dropweapon);
 							
 							p.rawWeapons.Remove(cache[iForTheMethod]);
 							cache[iForTheMethod] = 0;
@@ -961,13 +956,10 @@ namespace DemoInfo
 						}
 						if (p.rawWeapons.ContainsKey(cache[iForTheMethod]))
 						{
-							if (p.rawWeapons[cache[iForTheMethod]].Weapon != EquipmentElement.Knife)
-							{
-								DropWeaponEventArgs dropweapon = new DropWeaponEventArgs();
-								dropweapon.Player = p;
-								dropweapon.Weapon = p.rawWeapons[cache[iForTheMethod]];
-								RaiseDropWeapon(dropweapon);
-							}
+							DropWeaponEventArgs dropweapon = new DropWeaponEventArgs();
+							dropweapon.Player = p;
+							dropweapon.Weapon = p.rawWeapons[cache[iForTheMethod]];
+							RaiseDropWeapon(dropweapon);
 
 							p.rawWeapons.Remove(cache[iForTheMethod]);
 						}
