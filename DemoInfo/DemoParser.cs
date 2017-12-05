@@ -589,8 +589,8 @@ namespace DemoInfo
 						RaisePlayerBind(bind);
 					}
 
-					while (p.newWeapons.Count > 0){
-						var weapon = p.newWeapons.Dequeue();
+					while (p.NewWeapons.Count > 0){
+						var weapon = p.NewWeapons.Dequeue();
 						if (weapon.Weapon != EquipmentElement.Knife) { 
 							PickupWeaponEventArgs pickupweapon = new PickupWeaponEventArgs();
 							pickupweapon.Player = p;
@@ -929,11 +929,11 @@ namespace DemoInfo
 				weaponPrefix = "bcc_nonlocaldata.m_hMyWeapons.";
 
 			int[] cache = new int[MAXWEAPONS];
-			
+
 			for(int i = 0; i < MAXWEAPONS; i++)
 			{
 				int iForTheMethod = i; //Because else i is passed as reference to the delegate. 
-				
+
 				playerEntity.FindProperty(weaponPrefix + i.ToString().PadLeft(3, '0')).IntRecived += (sender, e) => {
 					int index = e.Value & INDEX_MASK;
 
@@ -987,7 +987,7 @@ namespace DemoInfo
 
 					if (p.FlashHandle != null && p.FlashHandle.AmmoType == iForTheMethod) {
 						if (e.Value == 2) {
-							p.newWeapons.Enqueue(p.FlashHandle);
+							p.NewWeapons.Enqueue(p.FlashHandle);
 							p.HasTwoFlashes = true;
 						} else if (p.HasTwoFlashes) {
 							DropWeaponEventArgs dropweapon = new DropWeaponEventArgs();
@@ -1032,11 +1032,11 @@ namespace DemoInfo
 		}
 
 		private bool AttributeWeapon(int weaponEntityIndex, Player p)
-		{			
+		{
 			var weapon = weapons[weaponEntityIndex];
 			weapon.Owner = p;
 			p.rawWeapons [weaponEntityIndex] = weapon;
-			p.newWeapons.Enqueue(weapon);
+			p.NewWeapons.Enqueue(weapon);
 
 			return true;
 

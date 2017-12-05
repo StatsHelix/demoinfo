@@ -418,7 +418,7 @@ namespace DemoInfo
 			if (OriginalString.Contains ("knife") || OriginalString == "bayonet") {
 				weapon = EquipmentElement.Knife;
 			}
-			
+
 			if (weapon == EquipmentElement.Unknown) {
 				switch (OriginalString) {
 				case "ak47":
