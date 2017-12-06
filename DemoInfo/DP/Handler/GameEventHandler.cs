@@ -29,6 +29,7 @@ namespace DemoInfo.DP.Handler
 		public static void Apply(GameEvent rawEvent, DemoParser parser)
 		{
 			var descriptors = parser.GEH_Descriptors;
+			//previous blind implementation
 			var blindPlayers = parser.GEH_BlindPlayers;
 
 			if (descriptors == null)
@@ -184,14 +185,38 @@ namespace DemoInfo.DP.Handler
 				#region Nades
 			case "player_blind":
 				data = MapData(eventDescriptor, rawEvent);
-				if (parser.Players.ContainsKey((int)data["userid"]))
+
+				if (parser.Players.ContainsKey((int)data["userid"])) {
+					var blindPlayer = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
+
+					if (blindPlayer != null && blindPlayer.Team != Team.Spectate)
+					{
+						BlindEventArgs blind = new BlindEventArgs();
+						blind.Player = blindPlayer;
+						if (data.ContainsKey("attacker") && parser.Players.ContainsKey((int)data["attacker"])) {
+							blind.Attacker = parser.Players[(int)data["attacker"]];
+						} else {
+							blind.Attacker = null;
+						}
+
+						if (data.ContainsKey("blind_duration"))
+							blind.FlashDuration = (float?)data["blind_duration"];
+						else
+							blind.FlashDuration = null;
+
+						parser.RaiseBlind(blind);
+					}
+
+					//previous blind implementation
 					blindPlayers.Add(parser.Players[(int)data["userid"]]);
+				}
+
 				break;
 			case "flashbang_detonate":
 				var args = FillNadeEvent<FlashEventArgs>(MapData(eventDescriptor, rawEvent), parser);
-				args.FlashedPlayers = blindPlayers.ToArray();
+				args.FlashedPlayers = blindPlayers.ToArray(); //prev blind implementation
 				parser.RaiseFlashExploded(args);
-				blindPlayers.Clear();
+				blindPlayers.Clear(); //prev blind implementation
 				break;
 			case "hegrenade_detonate":
 				parser.RaiseGrenadeExploded(FillNadeEvent<GrenadeEventArgs>(MapData(eventDescriptor, rawEvent), parser));
