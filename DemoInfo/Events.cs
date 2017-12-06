@@ -159,6 +159,10 @@ namespace DemoInfo
 	}
 	public class FlashEventArgs : NadeEventArgs
 	{
+		//previous blind implementation
+		public Player[] FlashedPlayers { get; internal set; }
+		//
+
 		public FlashEventArgs () : base(EquipmentElement.Flash)
 		{
 
@@ -249,7 +253,7 @@ namespace DemoInfo
 
 		public Player Attacker { get; set; }
 
-		public float FlashDuration { get; set; }
+		public float? FlashDuration { get; set; }
 	}
 
 	public class PlayerBindEventArgs : EventArgs

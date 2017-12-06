@@ -410,6 +410,15 @@ namespace DemoInfo
 		internal Dictionary<int, GameEventList.Descriptor> GEH_Descriptors = null;
 
 		/// <summary>
+		/// The blind players, so we can tell who was flashed by a flashbang.
+		/// previous blind implementation
+		/// </summary>
+		internal List<Player> GEH_BlindPlayers = new List<Player>();
+
+		// These could be Dictionary<int, RecordedPropertyUpdate[]>, but I was too lazy to
+		// define that class. Also: It doesn't matter anyways, we always have to cast.
+
+		/// <summary>
 		/// The preprocessed baselines, useful to create entities fast
 		/// </summary>
 		internal Dictionary<int, object[]> PreprocessedBaselines = new Dictionary<int, object[]>();
