@@ -48,7 +48,7 @@ namespace DemoInfo.DP.Handler
 
 					// leave / destroy
 					e.Leave ();
-					e = null;
+					parser.Entities[currentEntity] = null;
 
 					//dunno, but you gotta read this.
 					if (reader.ReadBit()) {
