@@ -129,11 +129,39 @@ namespace DemoInfo
 			return new Vector() {X = a.X - b.X, Y = a.Y - b.Y, Z = a.Z - b.Z };
 		}
 
+		public double Distance(Vector v)
+		{
+			return Math.Sqrt(Math.Pow(this.X - v.X, 2) + Math.Pow(this.Y - v.Y, 2) + Math.Pow(this.Z - v.Z, 2));
+		}
+
         public override string ToString()
         {
             return "{X: " + X + ", Y: " + Y + ", Z: " + Z + " }";
         }
     }
+
+	internal class OwnedEntity
+	{
+		internal Vector Origin;
+		internal int CellX;
+		internal int CellY;
+		internal int CellZ;
+		internal Player Owner;
+		internal Vector Position
+		{
+			get
+			{
+				return parser.CellsToCoords(CellX, CellY, CellZ) + Origin;
+			}
+		}
+
+		private DemoParser parser;
+
+		public OwnedEntity(DemoParser parser)
+		{
+			this.parser = parser;
+		}
+	}
 
 	/// <summary>
 	/// And Angle in the Source-Engine. Looks pretty much like a vector. 

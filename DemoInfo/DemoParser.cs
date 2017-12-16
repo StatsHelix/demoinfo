@@ -27,6 +27,9 @@ namespace DemoInfo
 		const int MAXPLAYERS = 64;
 		const int MAXWEAPONS = 64;
 
+		private const int MAX_COORD_INTEGER = 16384;
+		private int cellWidth;
+
 
 		#region Events
 		/// <summary>
@@ -678,6 +681,8 @@ namespace DemoInfo
 			HandlePlayers();
 
 			HandleWeapons ();
+
+			SetCellWidth();
 		}
 
 		private void HandleTeamScores()
@@ -1095,6 +1100,26 @@ namespace DemoInfo
 			};
 
 		}
+
+		private void SetCellWidth()
+		{
+			SendTableParser.FindByName("CBaseEntity").OnNewEntity += (s, baseEnt) =>
+			{
+				baseEnt.Entity.FindProperty("m_cellbits").IntRecived += (s2, bitnum) =>
+				{
+					cellWidth = 1 << bitnum.Value;
+				};
+			};
+		}
+
+		internal Vector CellsToCoords(int cellX, int cellY, int cellZ)
+		{
+			return new Vector(
+				cellX * cellWidth - MAX_COORD_INTEGER,
+				cellY * cellWidth - MAX_COORD_INTEGER,
+				cellZ * cellWidth - MAX_COORD_INTEGER);
+		}
+
 		#if SAVE_PROP_VALUES
 		[Obsolete("This method is only for debugging-purposes and shuld never be used in production, so you need to live with this warning.")]
 		public string DumpAllEntities()
