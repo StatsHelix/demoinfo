@@ -238,7 +238,7 @@ namespace DemoInfo.DP.Handler
 				var fireArgs = FillNadeEvent<FireEventArgs>(fireData, parser);
 				var fireStarted = new Tuple<int, FireEventArgs>((int)fireData["entityid"], fireArgs);
 				parser.GEH_StartBurns.Enqueue(fireStarted);
-
+				parser.RaiseFireStart(fireArgs);
 				break;
 			case "inferno_expire":
 				var fireEndData = MapData(eventDescriptor, rawEvent);

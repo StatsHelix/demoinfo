@@ -143,6 +143,12 @@ namespace DemoInfo
 		public event EventHandler<FireEventArgs> FireNadeStarted;
 
 		/// <summary>
+		/// FireNadeStarted, but with correct ThrownBy player.
+		/// Hint: Raised at the end of inferno_startburn tick instead of exactly when the event is parsed
+		/// </summary>
+		public EventHandler<FireEventArgs> FireNadeWithOwnerStarted;
+
+		/// <summary>
 		/// Occurs when fire nade ended.
 		/// Hint: When a round ends, this is *not* caĺled. 
 		/// Make sure to clear nades yourself at the end of rounds
@@ -593,7 +599,7 @@ namespace DemoInfo
 			while (GEH_StartBurns.Count > 0) {
 				var fireTup = GEH_StartBurns.Dequeue();
 				fireTup.Item2.ThrownBy = InfernoOwners[fireTup.Item1];
-				RaiseFireStart(fireTup.Item2);
+				RaiseFireWithOwnerStart(fireTup.Item2);
 			}
 
 			if (b) {
@@ -1322,6 +1328,15 @@ namespace DemoInfo
 				NadeReachedTarget(this, args);
 		}
 
+		internal void RaiseFireWithOwnerStart(FireEventArgs args)
+		{
+			if (FireNadeWithOwnerStarted != null)
+				FireNadeWithOwnerStarted(this, args);
+
+			if (NadeReachedTarget != null)
+				NadeReachedTarget(this, args);
+		}
+
 		internal void RaiseFireEnd(FireEventArgs args)
 		{
 			if (FireNadeEnded != null)
@@ -1444,6 +1459,7 @@ namespace DemoInfo
 			this.ExplosiveNadeExploded = null;
 			this.FireNadeEnded = null;
 			this.FireNadeStarted = null;
+			this.FireNadeWithOwnerStarted = null;
 			this.FlashNadeExploded = null;
 			this.HeaderParsed = null;
 			this.MatchStarted = null;
