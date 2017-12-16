@@ -143,6 +143,12 @@ namespace DemoInfo
 		public event EventHandler<FireEventArgs> FireNadeStarted;
 
 		/// <summary>
+		/// FireNadeStarted, but with correct ThrownBy player.
+		/// Hint: Raised at the end of inferno_startburn tick instead of exactly when the event is parsed
+		/// </summary>
+		public EventHandler<FireEventArgs> FireNadeWithOwnerStarted;
+
+		/// <summary>
 		/// Occurs when fire nade ended.
 		/// Hint: When a round ends, this is *not* caĺled. 
 		/// Make sure to clear nades yourself at the end of rounds
@@ -415,6 +421,12 @@ namespace DemoInfo
 		/// </summary>
 		internal List<Player> GEH_BlindPlayers = new List<Player>();
 
+		/// <summary>
+		/// Holds inferno_startburn event args so they can be matched with player
+		/// </summary>
+		internal Queue<Tuple<int, FireEventArgs>> GEH_StartBurns = new Queue<Tuple<int, FireEventArgs>>();
+
+
 		// These could be Dictionary<int, RecordedPropertyUpdate[]>, but I was too lazy to
 		// define that class. Also: It doesn't matter anyways, we always have to cast.
 
@@ -584,6 +596,12 @@ namespace DemoInfo
 				}
 			}
 
+			while (GEH_StartBurns.Count > 0) {
+				var fireTup = GEH_StartBurns.Dequeue();
+				fireTup.Item2.ThrownBy = InfernoOwners[fireTup.Item1];
+				RaiseFireWithOwnerStart(fireTup.Item2);
+			}
+
 			if (b) {
 				if (TickDone != null)
 					TickDone(this, new TickDoneEventArgs());
@@ -678,6 +696,8 @@ namespace DemoInfo
 			HandlePlayers();
 
 			HandleWeapons ();
+
+			HandleInfernos();
 		}
 
 		private void HandleTeamScores()
@@ -1095,6 +1115,24 @@ namespace DemoInfo
 			};
 
 		}
+
+		internal Dictionary<int, Player> InfernoOwners = new Dictionary<int, Player>();
+		private void HandleInfernos()
+		{
+			var inferno = SendTableParser.FindByName("CInferno");
+
+			inferno.OnNewEntity += (s, infEntity) => {
+				infEntity.Entity.FindProperty("m_hOwnerEntity").IntRecived += (s2, handleID) => {
+					int playerEntityID = handleID.Value & INDEX_MASK;
+					if (playerEntityID < PlayerInformations.Length && PlayerInformations[playerEntityID - 1] != null)
+						InfernoOwners[infEntity.Entity.ID] = PlayerInformations[playerEntityID - 1];
+				};
+			};
+
+			inferno.OnDestroyEntity += (s, infEntity) => {
+				InfernoOwners.Remove(infEntity.Entity.ID);
+			};
+		}
 		#if SAVE_PROP_VALUES
 		[Obsolete("This method is only for debugging-purposes and shuld never be used in production, so you need to live with this warning.")]
 		public string DumpAllEntities()
@@ -1290,6 +1328,15 @@ namespace DemoInfo
 				NadeReachedTarget(this, args);
 		}
 
+		internal void RaiseFireWithOwnerStart(FireEventArgs args)
+		{
+			if (FireNadeWithOwnerStarted != null)
+				FireNadeWithOwnerStarted(this, args);
+
+			if (NadeReachedTarget != null)
+				NadeReachedTarget(this, args);
+		}
+
 		internal void RaiseFireEnd(FireEventArgs args)
 		{
 			if (FireNadeEnded != null)
@@ -1412,6 +1459,7 @@ namespace DemoInfo
 			this.ExplosiveNadeExploded = null;
 			this.FireNadeEnded = null;
 			this.FireNadeStarted = null;
+			this.FireNadeWithOwnerStarted = null;
 			this.FlashNadeExploded = null;
 			this.HeaderParsed = null;
 			this.MatchStarted = null;
