@@ -146,7 +146,7 @@ namespace DemoInfo
 		/// FireNadeStarted, but with correct ThrownBy player.
 		/// Hint: Raised at the end of inferno_startburn tick instead of exactly when the event is parsed
 		/// </summary>
-		public EventHandler<FireEventArgs> FireNadeWithOwnerStarted;
+		public event EventHandler<FireEventArgs> FireNadeWithOwnerStarted;
 
 		/// <summary>
 		/// Occurs when fire nade ended.
