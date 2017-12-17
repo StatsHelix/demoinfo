@@ -142,24 +142,65 @@ namespace DemoInfo
 
 	internal class OwnedEntity
 	{
-		internal Vector Origin;
-		internal int CellX;
-		internal int CellY;
-		internal int CellZ;
-		internal Player Owner;
+		virtual internal int? EntityID { get; set; }
+		virtual internal Vector Origin { get; set; }
+		internal int CellX { get; set; }
+		internal int CellY { get; set; }
+		internal int CellZ { get; set; }
+		internal Player Owner { get; set; }
 		internal Vector Position
 		{
 			get
 			{
-				return parser.CellsToCoords(CellX, CellY, CellZ) + Origin;
+				if (Origin != null)
+					return parser.CellsToCoords(CellX, CellY, CellZ) + Origin;
+				else
+					return new Vector();
 			}
 		}
 
-		private DemoParser parser;
+		DemoParser parser;
 
 		public OwnedEntity(DemoParser parser)
 		{
 			this.parser = parser;
+		}
+	}
+
+	abstract class DetonateEntity : OwnedEntity
+	{
+		internal NadeEventArgs NadeArgs;
+
+		internal DetonateEntity(DemoParser parser) : base(parser)
+		{
+
+		}
+
+		abstract internal void RaiseNadeEvent();
+	}
+
+	class DetonateEntity<T> : DetonateEntity where T : NadeEventArgs, new()
+	{
+		Action<T> Raise;
+
+		// These properties keep NadeArgs current
+		override internal int? EntityID { get { return NadeArgs.EntityID; } set { NadeArgs.EntityID = value; } }
+		override internal Vector Origin { get { return _origin; } set { _origin = value; NadeArgs.Position = Position; } }
+
+		Vector _origin;
+
+		internal DetonateEntity(DemoParser parser, Action<T> raise) : base(parser)
+		{
+			NadeArgs = new T();
+			NadeArgs.Interpolated = true;
+			NadeArgs.ThrownBy = Owner;
+
+			Raise = raise;
+		}
+
+		override internal void RaiseNadeEvent()
+		{
+			Raise((T)NadeArgs);
 		}
 	}
 

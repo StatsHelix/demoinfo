@@ -222,30 +222,36 @@ namespace DemoInfo.DP.Handler
 				parser.RaiseGrenadeExploded(FillNadeEvent<GrenadeEventArgs>(MapData(eventDescriptor, rawEvent), parser));
 				break;
 			case "decoy_started":
-				parser.RaiseDecoyStart(FillNadeEvent<DecoyEventArgs>(MapData(eventDescriptor, rawEvent), parser));
+				var decoyData = MapData(eventDescriptor, rawEvent);
+				parser.RaiseDecoyStart(FillNadeEvent<DecoyEventArgs>(decoyData, parser));
 				break;
 			case "decoy_detonate":
 				parser.RaiseDecoyEnd(FillNadeEvent<DecoyEventArgs>(MapData(eventDescriptor, rawEvent), parser));
 				break;
 			case "smokegrenade_detonate":
-				parser.RaiseSmokeStart(FillNadeEvent<SmokeEventArgs>(MapData(eventDescriptor, rawEvent), parser));
+				var smokeData = MapData(eventDescriptor, rawEvent);
+				var smokeArgs = FillNadeEvent<SmokeEventArgs>(smokeData, parser);
+				parser.RaiseSmokeStart(smokeArgs);
+				parser.DetonateStarts[(int)smokeData["entityid"]] = smokeArgs;
 				break;
 			case "smokegrenade_expired":
-				parser.RaiseSmokeEnd(FillNadeEvent<SmokeEventArgs>(MapData(eventDescriptor, rawEvent), parser));
+				var smokeEndData = MapData(eventDescriptor, rawEvent);
+				parser.RaiseSmokeEnd(FillNadeEvent<SmokeEventArgs>(smokeEndData, parser));
+				parser.DetonateStarts.Remove((int)smokeEndData["entityid"]);
 				break;
 			case "inferno_startburn":
 				var fireData = MapData(eventDescriptor, rawEvent);
 				var fireArgs = FillNadeEvent<FireEventArgs>(fireData, parser);
-				var fireStarted = new Tuple<int, FireEventArgs>((int)fireData["entityid"], fireArgs);
-				parser.GEH_StartBurns.Enqueue(fireStarted);
+				parser.DetonateStarts[(int)fireData["entityid"]] = fireArgs;
 				parser.RaiseFireStart(fireArgs);
 				break;
 			case "inferno_expire":
 				var fireEndData = MapData(eventDescriptor, rawEvent);
 				var fireEndArgs = FillNadeEvent<FireEventArgs>(fireEndData, parser);
-				int entityID = (int)fireEndData["entityid"];
-				fireEndArgs.ThrownBy = parser.InfernoOwners[entityID];
+				int endEntityID = (int)fireEndData["entityid"];
+				fireEndArgs.ThrownBy = parser.DetonateStarts[endEntityID].ThrownBy;
 				parser.RaiseFireEnd(fireEndArgs);
+				parser.DetonateStarts.Remove(endEntityID);
 				break;
 				#endregion
 
@@ -389,6 +395,8 @@ namespace DemoInfo.DP.Handler
 		private static T FillNadeEvent<T>(Dictionary<string, object> data, DemoParser parser) where T : NadeEventArgs, new()
 		{
 			var nade = new T();
+
+			nade.EntityID = (int)data["entityid"];
 
 			if (data.ContainsKey("userid") && parser.Players.ContainsKey((int)data["userid"]))
 				nade.ThrownBy = parser.Players[(int)data["userid"]];

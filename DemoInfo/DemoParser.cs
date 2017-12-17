@@ -424,12 +424,6 @@ namespace DemoInfo
 		/// </summary>
 		internal List<Player> GEH_BlindPlayers = new List<Player>();
 
-		/// <summary>
-		/// Holds inferno_startburn event args so they can be matched with player
-		/// </summary>
-		internal Queue<Tuple<int, FireEventArgs>> GEH_StartBurns = new Queue<Tuple<int, FireEventArgs>>();
-
-
 		// These could be Dictionary<int, RecordedPropertyUpdate[]>, but I was too lazy to
 		// define that class. Also: It doesn't matter anyways, we always have to cast.
 
@@ -598,11 +592,15 @@ namespace DemoInfo
 					}
 				}
 			}
+			while (InterpDetonates.Count > 0) {
+				var detonate = InterpDetonates.Dequeue();
+				detonate.RaiseNadeEvent();
+			}
 
-			while (GEH_StartBurns.Count > 0) {
-				var fireTup = GEH_StartBurns.Dequeue();
-				fireTup.Item2.ThrownBy = InfernoOwners[fireTup.Item1];
-				RaiseFireWithOwnerStart(fireTup.Item2);
+			while (newBurns.Count > 0)
+			{
+				var fire = newBurns.Dequeue();
+				RaiseFireWithOwnerStart(fire);
 			}
 
 			if (b) {
@@ -700,7 +698,7 @@ namespace DemoInfo
 
 			HandleWeapons ();
 
-			HandleInfernos();
+			HandleDetonates();
 
 			SetCellWidth();
 		}
@@ -1121,22 +1119,101 @@ namespace DemoInfo
 
 		}
 
-		internal Dictionary<int, Player> InfernoOwners = new Dictionary<int, Player>();
-		private void HandleInfernos()
+		internal Queue<DetonateEntity> InterpDetonates = new Queue<DetonateEntity>();
+		internal Queue<FireEventArgs> newBurns = new Queue<FireEventArgs>();
+		internal Dictionary<int, NadeEventArgs> DetonateStarts = new Dictionary<int, NadeEventArgs>();
+		private void HandleDetonates()
 		{
-			var inferno = SendTableParser.FindByName("CInferno");
+			var infernoClass = SendTableParser.FindByName("CInferno");
+			var smokeClass = SendTableParser.FindByName("CSmokeGrenadeProjectile");
+			//var decoyClass = SendTableParser.FindByName("C")
+			ServerClass[] serverClasses = new ServerClass[2] {infernoClass, smokeClass};
+			foreach (var serverClass in serverClasses)
+			{
+				serverClass.OnNewEntity += (s, detEntity) =>
+				{
+					OwnedEntity interpedDetonate;
 
-			inferno.OnNewEntity += (s, infEntity) => {
-				infEntity.Entity.FindProperty("m_hOwnerEntity").IntRecived += (s2, handleID) => {
-					int playerEntityID = handleID.Value & INDEX_MASK;
-					if (playerEntityID < PlayerInformations.Length && PlayerInformations[playerEntityID - 1] != null)
-						InfernoOwners[infEntity.Entity.ID] = PlayerInformations[playerEntityID - 1];
+					if (serverClass == infernoClass)
+					{
+						interpedDetonate = new DetonateEntity<FireEventArgs>(this, RaiseFireWithOwnerStart);
+						detEntity.Entity.FindProperty("m_hOwnerEntity").IntRecived += (s2, handleID) =>
+						{
+							int playerEntityID = handleID.Value & INDEX_MASK;
+							if (playerEntityID < PlayerInformations.Length && PlayerInformations[playerEntityID - 1] != null)
+								DetonateStarts[detEntity.Entity.ID].ThrownBy = PlayerInformations[playerEntityID - 1];
+						};
+
+						if (DetonateStarts.ContainsKey(detEntity.Entity.ID))
+							newBurns.Enqueue((FireEventArgs)DetonateStarts[detEntity.Entity.ID]);
+					}
+					else// if (serverClass == smokeClass)
+					{
+						interpedDetonate = new DetonateEntity<SmokeEventArgs>(this, RaiseSmokeStart);
+						detEntity.Entity.FindProperty("m_hThrower").IntRecived += (s2, handleID) => {
+							int playerEntityID = handleID.Value & INDEX_MASK;
+							if (playerEntityID < PlayerInformations.Length && PlayerInformations[playerEntityID - 1] != null)
+								interpedDetonate.Owner = PlayerInformations[playerEntityID - 1];
+						};
+
+						detEntity.Entity.FindProperty("m_bDidSmokeEffect").IntRecived += (s2, smokeEffect) =>
+						{
+							//m_bDidSmokeEffect happens on the same tick and after smokegrenade_detonate
+							if (smokeEffect.Value == 1 && DetonateStarts[detEntity.Entity.ID].Interpolated)
+								InterpDetonates.Enqueue((DetonateEntity)interpedDetonate);
+						};
+					}
+
+					if (!DetonateStarts.ContainsKey(detEntity.Entity.ID))
+					{
+						//DT_Inferno entity is created on the same tick and after inferno_startburn
+						if (serverClass == infernoClass)
+							InterpDetonates.Enqueue((DetonateEntity)interpedDetonate);
+
+						DetonateStarts[detEntity.Entity.ID] = ((DetonateEntity)interpedDetonate).NadeArgs;
+						interpedDetonate.EntityID = detEntity.Entity.ID;
+
+						detEntity.Entity.FindProperty("m_cellX").IntRecived += (s2, cell) =>
+						{
+							interpedDetonate.CellX = cell.Value;
+						};
+
+						detEntity.Entity.FindProperty("m_cellY").IntRecived += (s2, cell) =>
+						{
+							interpedDetonate.CellY = cell.Value;
+						};
+
+						detEntity.Entity.FindProperty("m_cellZ").IntRecived += (s2, cell) =>
+						{
+							interpedDetonate.CellZ = cell.Value;
+						};
+
+						detEntity.Entity.FindProperty("m_vecOrigin").VectorRecived += (s2, vector) =>
+						{
+							interpedDetonate.Origin = vector.Value;
+						};
+					}
 				};
-			};
 
-			inferno.OnDestroyEntity += (s, infEntity) => {
-				InfernoOwners.Remove(infEntity.Entity.ID);
-			};
+				serverClass.OnDestroyEntity += (s, detEntity) =>
+				{
+					// DetonateStart items get removed on detonate_end events,
+					// so the only ones left at this point are those that had no end triggered
+					if (DetonateStarts.ContainsKey(detEntity.Entity.ID))
+					{
+						var nadeArgs = DetonateStarts[detEntity.Entity.ID];
+						if (nadeArgs is FireEventArgs)
+							RaiseFireEnd((FireEventArgs)nadeArgs);
+						else if (nadeArgs is SmokeEventArgs)
+							RaiseSmokeEnd((SmokeEventArgs)nadeArgs);
+						else if (nadeArgs is DecoyEventArgs)
+							RaiseDecoyEnd((DecoyEventArgs)nadeArgs);
+
+						DetonateStarts.Remove(detEntity.Entity.ID);
+					}
+				};
+			}
+
 		}
 
 		private void SetCellWidth()

@@ -125,6 +125,9 @@ namespace DemoInfo
 		public EquipmentElement NadeType { get; internal set; }
 		public Player ThrownBy { get; internal set; }
 
+		public int? EntityID;
+		public bool Interpolated = false;
+
 		internal NadeEventArgs ()
 		{
 		
