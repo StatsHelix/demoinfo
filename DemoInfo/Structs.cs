@@ -147,7 +147,7 @@ namespace DemoInfo
 		internal int CellX { get; set; }
 		internal int CellY { get; set; }
 		internal int CellZ { get; set; }
-		internal Player Owner { get; set; }
+		virtual internal Player Owner { get; set; }
 		internal Vector Position
 		{
 			get
@@ -185,7 +185,8 @@ namespace DemoInfo
 
 		// These properties keep NadeArgs current
 		override internal int? EntityID { get { return NadeArgs.EntityID; } set { NadeArgs.EntityID = value; } }
-		override internal Vector Origin { get { return _origin; } set { _origin = value; NadeArgs.Position = Position; } }
+		override internal Vector Origin { get { return _origin; } set { _origin = value; NadeArgs.Position = Position; } } //not efficient, but the least bad option
+		override internal Player Owner { get { return NadeArgs.ThrownBy; } set { NadeArgs.ThrownBy = value; } }
 
 		Vector _origin;
 
@@ -193,7 +194,6 @@ namespace DemoInfo
 		{
 			NadeArgs = new T();
 			NadeArgs.Interpolated = true;
-			NadeArgs.ThrownBy = Owner;
 
 			Raise = raise;
 		}

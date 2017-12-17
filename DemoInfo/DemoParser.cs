@@ -1213,7 +1213,6 @@ namespace DemoInfo
 					}
 				};
 			}
-
 		}
 
 		private void SetCellWidth()
