@@ -257,6 +257,8 @@ namespace DemoInfo
 		public Player Attacker { get; set; }
 
 		public float? FlashDuration { get; set; }
+
+		public int? ProjectileEntityID { get; set; }
 	}
 
 	public class PlayerBindEventArgs : EventArgs

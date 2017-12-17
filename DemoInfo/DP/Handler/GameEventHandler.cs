@@ -204,6 +204,9 @@ namespace DemoInfo.DP.Handler
 						else
 							blind.FlashDuration = null;
 
+						if (data.ContainsKey("entityid"))
+							blind.ProjectileEntityID = (int?)data["entityid"];
+
 						parser.RaiseBlind(blind);
 					}
 
