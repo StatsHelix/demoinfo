@@ -149,7 +149,7 @@ namespace DemoInfo
 		/// FireNadeStarted, but with correct ThrownBy player.
 		/// Hint: Raised at the end of inferno_startburn tick instead of exactly when the event is parsed
 		/// </summary>
-		public EventHandler<FireEventArgs> FireNadeWithOwnerStarted;
+		public event EventHandler<FireEventArgs> FireNadeWithOwnerStarted;
 
 		/// <summary>
 		/// Occurs when fire nade ended.
@@ -1202,13 +1202,27 @@ namespace DemoInfo
 					if (DetonateStarts.ContainsKey(detEntity.Entity.ID))
 					{
 						var nadeArgs = DetonateStarts[detEntity.Entity.ID];
-						if (nadeArgs is FireEventArgs)
-							RaiseFireEnd((FireEventArgs)nadeArgs);
-						else if (nadeArgs is SmokeEventArgs)
-							RaiseSmokeEnd((SmokeEventArgs)nadeArgs);
-						else if (nadeArgs is DecoyEventArgs)
-							RaiseDecoyEnd((DecoyEventArgs)nadeArgs);
 
+						// Make a copy of nadeArgs rather than using reference to one used for the start event
+						// Would be nice if this could be done dynamically
+						if (nadeArgs is FireEventArgs)
+						{
+							FireEventArgs newArgs = new FireEventArgs(nadeArgs);
+							newArgs.Interpolated = true;
+							RaiseFireEnd(newArgs);
+						}
+						else if (nadeArgs is SmokeEventArgs)
+						{
+							SmokeEventArgs newArgs = new SmokeEventArgs(nadeArgs);
+							newArgs.Interpolated = true;
+							RaiseSmokeEnd(newArgs);
+						}
+						else if (nadeArgs is DecoyEventArgs)
+						{
+							DecoyEventArgs newArgs = new DecoyEventArgs(nadeArgs);
+							newArgs.Interpolated = true;
+							RaiseDecoyEnd(newArgs);
+						}
 						DetonateStarts.Remove(detEntity.Entity.ID);
 					}
 				};

@@ -133,6 +133,16 @@ namespace DemoInfo
 		
 		}
 
+		internal NadeEventArgs (NadeEventArgs nadeArgs)
+		{
+			Position = nadeArgs.Position;
+			NadeType = nadeArgs.NadeType;
+			ThrownBy = nadeArgs.ThrownBy;
+
+			EntityID = nadeArgs.EntityID;
+			Interpolated = nadeArgs.Interpolated;
+		}
+
 		internal NadeEventArgs (EquipmentElement type)
 		{
 			this.NadeType = type;
@@ -145,6 +155,11 @@ namespace DemoInfo
 		{
 			
 		}
+
+		public FireEventArgs (NadeEventArgs nadeArgs) : base(nadeArgs)
+		{
+
+		}
 	}
 	public class SmokeEventArgs : NadeEventArgs
 	{
@@ -152,12 +167,22 @@ namespace DemoInfo
 		{
 			
 		}
+
+		public SmokeEventArgs (NadeEventArgs nadeArgs) : base(nadeArgs)
+		{
+
+		}
 	}
 	public class DecoyEventArgs : NadeEventArgs
 	{
 		public DecoyEventArgs () : base(EquipmentElement.Decoy)
 		{
 			
+		}
+
+		public DecoyEventArgs (NadeEventArgs nadeArgs) : base(nadeArgs)
+		{
+
 		}
 	}
 	public class FlashEventArgs : NadeEventArgs
@@ -170,12 +195,22 @@ namespace DemoInfo
 		{
 
 		}
+
+		public FlashEventArgs (NadeEventArgs nadeArgs) : base(nadeArgs)
+		{
+
+		}
 	}
 	public class GrenadeEventArgs : NadeEventArgs
 	{
 		public GrenadeEventArgs () : base(EquipmentElement.HE)
 		{
 			
+		}
+
+		public GrenadeEventArgs (NadeEventArgs nadeArgs) : base(nadeArgs)
+		{
+
 		}
 	}
 
