@@ -549,6 +549,8 @@ namespace DemoInfo
 			}
 		}
 
+		internal bool FirstTickOfRound = false;
+
 		/// <summary>
 		/// Parses the next tick of the demo.
 		/// </summary>
@@ -603,6 +605,20 @@ namespace DemoInfo
 				RaiseFireWithOwnerStart(fire);
 			}
 
+			if (FirstTickOfRound)
+			{
+				FirstTickOfRound = false;
+				if (DetonateStarts.Count > 0)
+				{
+					// Usually these entities get destroyed on the first tick of a new round,
+					// but sometimes they can be replaced by a new entity on this tick without
+					// the destroy ever being registered.
+					int[] detKeys = new int[DetonateStarts.Count];
+					DetonateStarts.Keys.CopyTo(detKeys, 0);
+					foreach (int entID in detKeys)
+						PopDetonateStart(entID);
+				}
+			}
 			if (b) {
 				if (TickDone != null)
 					TickDone(this, new TickDoneEventArgs());
@@ -1200,33 +1216,36 @@ namespace DemoInfo
 					// DetonateStart items get removed on detonate_end events,
 					// so the only ones left at this point are those that had no end triggered
 					if (DetonateStarts.ContainsKey(detEntity.Entity.ID))
-					{
-						var nadeArgs = DetonateStarts[detEntity.Entity.ID];
-
-						// Make a copy of nadeArgs rather than using reference to one used for the start event
-						// Would be nice if this could be done dynamically
-						if (nadeArgs is FireEventArgs)
-						{
-							FireEventArgs newArgs = new FireEventArgs(nadeArgs);
-							newArgs.Interpolated = true;
-							RaiseFireEnd(newArgs);
-						}
-						else if (nadeArgs is SmokeEventArgs)
-						{
-							SmokeEventArgs newArgs = new SmokeEventArgs(nadeArgs);
-							newArgs.Interpolated = true;
-							RaiseSmokeEnd(newArgs);
-						}
-						else if (nadeArgs is DecoyEventArgs)
-						{
-							DecoyEventArgs newArgs = new DecoyEventArgs(nadeArgs);
-							newArgs.Interpolated = true;
-							RaiseDecoyEnd(newArgs);
-						}
-						DetonateStarts.Remove(detEntity.Entity.ID);
-					}
+						PopDetonateStart(detEntity.Entity.ID);
 				};
 			}
+		}
+
+		private void PopDetonateStart(int entID)
+		{
+			var nadeArgs = DetonateStarts[entID];
+
+			// Make a copy of nadeArgs rather than using reference to one used for the start event
+			// Would be nice if this could be done dynamically
+			if (nadeArgs is FireEventArgs)
+			{
+				FireEventArgs newArgs = new FireEventArgs(nadeArgs);
+				newArgs.Interpolated = true;
+				RaiseFireEnd(newArgs);
+			}
+			else if (nadeArgs is SmokeEventArgs)
+			{
+				SmokeEventArgs newArgs = new SmokeEventArgs(nadeArgs);
+				newArgs.Interpolated = true;
+				RaiseSmokeEnd(newArgs);
+			}
+			else if (nadeArgs is DecoyEventArgs)
+			{
+				DecoyEventArgs newArgs = new DecoyEventArgs(nadeArgs);
+				newArgs.Interpolated = true;
+				RaiseDecoyEnd(newArgs);
+			}
+			DetonateStarts.Remove(entID);
 		}
 
 		private void SetCellWidth()
