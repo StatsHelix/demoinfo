@@ -550,6 +550,7 @@ namespace DemoInfo
 		}
 
 		internal bool FirstTickOfRound = false;
+		const int decoyPreStartThresh = 50;
 
 		/// <summary>
 		/// Parses the next tick of the demo.
@@ -618,7 +619,23 @@ namespace DemoInfo
 					foreach (int entID in detKeys)
 						PopDetonateStart(entID);
 				}
+
+				DecoyPreStarts.Clear();
 			}
+
+			if (CurrentTick % 10 == 0)
+			{
+				for (int i = DecoyPreStarts.Count - 1; i >= 0; i--)
+				{
+					var tup = DecoyPreStarts[i];
+					if (CurrentTick - tup.Item2 > decoyPreStartThresh)
+					{
+						InterpDetonates.Enqueue(tup.Item1);
+						DecoyPreStarts.RemoveAt(i);
+					}
+				}
+			}
+
 			if (b) {
 				if (TickDone != null)
 					TickDone(this, new TickDoneEventArgs());
@@ -1137,13 +1154,14 @@ namespace DemoInfo
 
 		internal Queue<DetonateEntity> InterpDetonates = new Queue<DetonateEntity>();
 		internal Queue<FireEventArgs> newBurns = new Queue<FireEventArgs>();
+		internal List<Tuple<DetonateEntity, int>> DecoyPreStarts = new List<Tuple<DetonateEntity, int>>();
 		internal Dictionary<int, NadeEventArgs> DetonateStarts = new Dictionary<int, NadeEventArgs>();
 		private void HandleDetonates()
 		{
 			var infernoClass = SendTableParser.FindByName("CInferno");
 			var smokeClass = SendTableParser.FindByName("CSmokeGrenadeProjectile");
-			//var decoyClass = SendTableParser.FindByName("C")
-			ServerClass[] serverClasses = new ServerClass[2] {infernoClass, smokeClass};
+			var decoyClass = SendTableParser.FindByName("CDecoyProjectile");
+			ServerClass[] serverClasses = new ServerClass[3] {infernoClass, smokeClass, decoyClass};
 			foreach (var serverClass in serverClasses)
 			{
 				serverClass.OnNewEntity += (s, detEntity) =>
@@ -1153,25 +1171,12 @@ namespace DemoInfo
 					if (serverClass == infernoClass)
 					{
 						interpedDetonate = new DetonateEntity<FireEventArgs>(this, RaiseFireWithOwnerStart);
-						detEntity.Entity.FindProperty("m_hOwnerEntity").IntRecived += (s2, handleID) =>
-						{
-							int playerEntityID = handleID.Value & INDEX_MASK;
-							if (playerEntityID < PlayerInformations.Length && PlayerInformations[playerEntityID - 1] != null)
-								DetonateStarts[detEntity.Entity.ID].ThrownBy = PlayerInformations[playerEntityID - 1];
-						};
-
 						if (DetonateStarts.ContainsKey(detEntity.Entity.ID))
 							newBurns.Enqueue((FireEventArgs)DetonateStarts[detEntity.Entity.ID]);
 					}
-					else// if (serverClass == smokeClass)
+					else if (serverClass == smokeClass)
 					{
 						interpedDetonate = new DetonateEntity<SmokeEventArgs>(this, RaiseSmokeStart);
-						detEntity.Entity.FindProperty("m_hThrower").IntRecived += (s2, handleID) => {
-							int playerEntityID = handleID.Value & INDEX_MASK;
-							if (playerEntityID < PlayerInformations.Length && PlayerInformations[playerEntityID - 1] != null)
-								interpedDetonate.Owner = PlayerInformations[playerEntityID - 1];
-						};
-
 						detEntity.Entity.FindProperty("m_bDidSmokeEffect").IntRecived += (s2, smokeEffect) =>
 						{
 							//m_bDidSmokeEffect happens on the same tick and after smokegrenade_detonate
@@ -1179,6 +1184,30 @@ namespace DemoInfo
 								InterpDetonates.Enqueue((DetonateEntity)interpedDetonate);
 						};
 					}
+					else
+					{
+						interpedDetonate = new DetonateEntity<DecoyEventArgs>(this, RaiseDecoyStart);
+						detEntity.Entity.FindProperty("m_fFlags").IntRecived += (s2, flag) =>
+						{
+							// There doesn't seem to be any property that is tightly coupled with
+							// decoy_started events, but m_fFlags always occurs an inconsistent number
+							// of ticks before decoy_started so we can use that to guess the range.
+							if (flag.Value == 1)
+							{
+								var preTup = new Tuple<DetonateEntity, int>(
+									(DetonateEntity)interpedDetonate, CurrentTick);
+
+								DecoyPreStarts.Add(preTup);
+							}
+						};
+					}
+
+					detEntity.Entity.FindProperty("m_hOwnerEntity").IntRecived += (s2, handleID) =>
+					{
+						int playerEntityID = handleID.Value & INDEX_MASK;
+						if (playerEntityID < PlayerInformations.Length && PlayerInformations[playerEntityID - 1] != null)
+							DetonateStarts[detEntity.Entity.ID].ThrownBy = PlayerInformations[playerEntityID - 1];
+					};
 
 					if (!DetonateStarts.ContainsKey(detEntity.Entity.ID))
 					{
@@ -1225,7 +1254,6 @@ namespace DemoInfo
 		{
 			var nadeArgs = DetonateStarts[entID];
 
-			// Make a copy of nadeArgs rather than using reference to one used for the start event
 			// Would be nice if this could be done dynamically
 			if (nadeArgs is FireEventArgs)
 			{

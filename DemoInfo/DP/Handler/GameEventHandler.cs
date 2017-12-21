@@ -231,9 +231,13 @@ namespace DemoInfo.DP.Handler
 			case "decoy_started":
 				var decoyData = MapData(eventDescriptor, rawEvent);
 				parser.RaiseDecoyStart(FillNadeEvent<DecoyEventArgs>(decoyData, parser));
+				var idx = parser.DecoyPreStarts.FindIndex(d => d.Item1.EntityID == (int)decoyData["entityid"]);
+				parser.DecoyPreStarts.RemoveAt(idx);
 				break;
 			case "decoy_detonate":
-				parser.RaiseDecoyEnd(FillNadeEvent<DecoyEventArgs>(MapData(eventDescriptor, rawEvent), parser));
+				var decoyEndData = MapData(eventDescriptor, rawEvent);
+				parser.RaiseDecoyEnd(FillNadeEvent<DecoyEventArgs>(decoyEndData, parser));
+				parser.DetonateStarts.Remove((int)decoyEndData["entityid"]);
 				break;
 			case "smokegrenade_detonate":
 				var smokeData = MapData(eventDescriptor, rawEvent);
