@@ -1193,7 +1193,7 @@ namespace DemoInfo
 							// decoy_started events, but m_fFlags always occurs 0-128 IngameTicks beforehand.
 							if (flag.Value == 1)
 							{
-								if (!DetonateStarts.ContainsKey(detEntity.Entity.ID))
+								if (DetonateStarts[detEntity.Entity.ID].Interpolated)
 								{
 									// It's possible for m_fFlags to be set on the same tick as decoy_started,
 									// in which case this will be parsed after the decoy_started event, hence
