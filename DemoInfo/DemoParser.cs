@@ -550,7 +550,6 @@ namespace DemoInfo
 		}
 
 		internal bool FirstTickOfRound = false;
-		const int decoyPreStartThresh = 50;
 
 		/// <summary>
 		/// Parses the next tick of the demo.
@@ -623,12 +622,13 @@ namespace DemoInfo
 				DecoyPreStarts.Clear();
 			}
 
+			const int decoyPreStartThresh = 128;
 			if (CurrentTick % 10 == 0)
 			{
 				for (int i = DecoyPreStarts.Count - 1; i >= 0; i--)
 				{
 					var tup = DecoyPreStarts[i];
-					if (CurrentTick - tup.Item2 > decoyPreStartThresh)
+					if (IngameTick - tup.Item2 > decoyPreStartThresh)
 					{
 						InterpDetonates.Enqueue(tup.Item1);
 						DecoyPreStarts.RemoveAt(i);
@@ -1190,14 +1190,18 @@ namespace DemoInfo
 						detEntity.Entity.FindProperty("m_fFlags").IntRecived += (s2, flag) =>
 						{
 							// There doesn't seem to be any property that is tightly coupled with
-							// decoy_started events, but m_fFlags always occurs an inconsistent number
-							// of ticks before decoy_started so we can use that to guess the range.
+							// decoy_started events, but m_fFlags always occurs 0-128 IngameTicks beforehand.
 							if (flag.Value == 1)
 							{
-								var preTup = new Tuple<DetonateEntity, int>(
-									(DetonateEntity)interpedDetonate, CurrentTick);
-
-								DecoyPreStarts.Add(preTup);
+								if (!DetonateStarts.ContainsKey(detEntity.Entity.ID))
+								{
+									// It's possible for m_fFlags to be set on the same tick as decoy_started,
+									// in which case this will be parsed after the decoy_started event, hence
+									// the need to check DetonateStarts
+									var preTup = new Tuple<DetonateEntity, int>(
+										(DetonateEntity)interpedDetonate, IngameTick);
+									DecoyPreStarts.Add(preTup);
+								}
 							}
 						};
 					}

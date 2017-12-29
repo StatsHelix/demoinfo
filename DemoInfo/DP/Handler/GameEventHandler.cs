@@ -230,9 +230,14 @@ namespace DemoInfo.DP.Handler
 				break;
 			case "decoy_started":
 				var decoyData = MapData(eventDescriptor, rawEvent);
-				parser.RaiseDecoyStart(FillNadeEvent<DecoyEventArgs>(decoyData, parser));
-				var idx = parser.DecoyPreStarts.FindIndex(d => d.Item1.EntityID == (int)decoyData["entityid"]);
-				parser.DecoyPreStarts.RemoveAt(idx);
+				var decoyArgs = FillNadeEvent<DecoyEventArgs>(decoyData, parser);
+				parser.RaiseDecoyStart(decoyArgs);
+				int decoyID = (int)decoyData["entityid"];
+				var idx = parser.DecoyPreStarts.FindIndex(d => d.Item1.EntityID == decoyID);
+				// if m_fFlags is on same tick as decoy_started, DecoyPreStarts won't have decoyID
+				if (idx != -1)
+					parser.DecoyPreStarts.RemoveAt(idx);
+				parser.DetonateStarts[decoyID] = decoyArgs;
 				break;
 			case "decoy_detonate":
 				var decoyEndData = MapData(eventDescriptor, rawEvent);
