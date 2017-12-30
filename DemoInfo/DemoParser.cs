@@ -594,38 +594,38 @@ namespace DemoInfo
 					}
 				}
 			}
+
 			while (InterpDetonates.Count > 0) {
 				var detonate = InterpDetonates.Dequeue();
-				detonate.RaiseNadeEvent();
+				detonate.RaiseNadeStart();
+				detonate.DetonateState = DetonateState.Detonating;
 			}
 
 			if (FirstTickOfRound)
 			{
 				FirstTickOfRound = false;
-				if (DetonateStarts.Count > 0)
+				if (DetonateEntities.Count > 0)
 				{
 					// Usually these entities get destroyed on the first tick of a new round,
 					// but sometimes they can be replaced by a new entity on this tick without
 					// the destroy ever being registered.
-					int[] detKeys = new int[DetonateStarts.Count];
-					DetonateStarts.Keys.CopyTo(detKeys, 0);
+					int[] detKeys = new int[DetonateEntities.Count];
+					DetonateEntities.Keys.CopyTo(detKeys, 0);
 					foreach (int entID in detKeys)
-						PopDetonateStart(entID);
+						PopDetonateEntity(entID);
 				}
-
-				DecoyPreStarts.Clear();
 			}
 
-			const int decoyPreStartThresh = 128;
+			const int preStartThresh = 2;
 			if (CurrentTick % 10 == 0)
 			{
-				for (int i = DecoyPreStarts.Count - 1; i >= 0; i--)
+				foreach (var det in DetonateEntities.Values)
 				{
-					var tup = DecoyPreStarts[i];
-					if (IngameTick - tup.Item2 > decoyPreStartThresh)
+					if (det is DecoyDetonateEntity &&
+						det.DetonateState == DetonateState.PreDetonate &&
+						CurrentTime - ((DecoyDetonateEntity)det).FlagTime > preStartThresh)
 					{
-						InterpDetonates.Enqueue(tup.Item1);
-						DecoyPreStarts.RemoveAt(i);
+						InterpDetonates.Enqueue(det);
 					}
 				}
 			}
@@ -1147,8 +1147,7 @@ namespace DemoInfo
 		}
 
 		internal Queue<DetonateEntity> InterpDetonates = new Queue<DetonateEntity>();
-		internal List<Tuple<DetonateEntity, int>> DecoyPreStarts = new List<Tuple<DetonateEntity, int>>();
-		internal Dictionary<int, NadeEventArgs> DetonateStarts = new Dictionary<int, NadeEventArgs>();
+		internal Dictionary<int, DetonateEntity> DetonateEntities = new Dictionary<int, DetonateEntity>();
 		private void HandleDetonates()
 		{
 			var infernoClass = SendTableParser.FindByName("CInferno");
@@ -1157,126 +1156,100 @@ namespace DemoInfo
 			ServerClass[] serverClasses = new ServerClass[3] {infernoClass, smokeClass, decoyClass};
 			foreach (var serverClass in serverClasses)
 			{
-				serverClass.OnNewEntity += (s, detEntity) =>
+				serverClass.OnNewEntity += (s, ent) =>
 				{
-					OwnedEntity interpedDetonate;
+					DetonateEntity det;
 
 					if (serverClass == infernoClass)
 					{
-						if (DetonateStarts.ContainsKey(detEntity.Entity.ID))
+						if (DetonateEntities.ContainsKey(ent.Entity.ID))
 						{
 							// inferno_startburn successfully triggered, but we still want to add owner
-							var nadeArgs = (FireEventArgs)DetonateStarts[detEntity.Entity.ID];
-							interpedDetonate = new DetonateEntity<FireEventArgs>(this, RaiseFireWithOwnerStart, nadeArgs);
-							InterpDetonates.Enqueue((DetonateEntity)interpedDetonate);
+							det = DetonateEntities[ent.Entity.ID];
+							InterpDetonates.Enqueue(det);
 						}
 						else
-							interpedDetonate = new DetonateEntity<FireEventArgs>(this, RaiseFireWithOwnerStart);
+							det = new FireDetonateEntity(this);
 					}
 					else if (serverClass == smokeClass)
 					{
-						interpedDetonate = new DetonateEntity<SmokeEventArgs>(this, RaiseSmokeStart);
-						detEntity.Entity.FindProperty("m_bDidSmokeEffect").IntRecived += (s2, smokeEffect) =>
+						det = new SmokeDetonateEntity(this);
+						ent.Entity.FindProperty("m_bDidSmokeEffect").IntRecived += (s2, smokeEffect) =>
 						{
-							//m_bDidSmokeEffect happens on the same tick and after smokegrenade_detonate
-							if (smokeEffect.Value == 1 && DetonateStarts[detEntity.Entity.ID].Interpolated)
-								InterpDetonates.Enqueue((DetonateEntity)interpedDetonate);
+							//m_bDidSmokeEffect happens on the same tick as smokegrenade_detonate
+							if (smokeEffect.Value == 1 && det.DetonateState == DetonateState.PreDetonate)
+								InterpDetonates.Enqueue(det);
 						};
 					}
 					else
 					{
-						interpedDetonate = new DetonateEntity<DecoyEventArgs>(this, RaiseDecoyStart);
-						detEntity.Entity.FindProperty("m_fFlags").IntRecived += (s2, flag) =>
+						det = new DecoyDetonateEntity(this);
+						ent.Entity.FindProperty("m_fFlags").IntRecived += (s2, flag) =>
 						{
 							// There doesn't seem to be any property that is tightly coupled with
-							// decoy_started events, but m_fFlags always occurs 0-128 IngameTicks beforehand.
+							// decoy_started events, but m_fFlags always occurs some time beforehand.
 							if (flag.Value == 1)
 							{
-								if (DetonateStarts[detEntity.Entity.ID].Interpolated)
+								if (det.DetonateState == DetonateState.PreDetonate)
 								{
-									// It's possible for m_fFlags to be set on the same tick as decoy_started,
-									// in which case this will be parsed after the decoy_started event, hence
-									// the need to check DetonateStarts
-									var preTup = new Tuple<DetonateEntity, int>(
-										(DetonateEntity)interpedDetonate, IngameTick);
-									DecoyPreStarts.Add(preTup);
+									// It's possible, but rare, for m_fFlags to be set on the same tick as decoy_started
+									((DecoyDetonateEntity)det).FlagTime = CurrentTime;
 								}
 							}
 						};
 					}
 
-					detEntity.Entity.FindProperty("m_hOwnerEntity").IntRecived += (s2, handleID) =>
+					ent.Entity.FindProperty("m_hOwnerEntity").IntRecived += (s2, handleID) =>
 					{
 						int playerEntityID = handleID.Value & INDEX_MASK;
 						if (playerEntityID < PlayerInformations.Length && PlayerInformations[playerEntityID - 1] != null)
-							DetonateStarts[detEntity.Entity.ID].ThrownBy = PlayerInformations[playerEntityID - 1];
+							DetonateEntities[ent.Entity.ID].NadeArgs.ThrownBy = PlayerInformations[playerEntityID - 1];
 					};
 
-					if (!DetonateStarts.ContainsKey(detEntity.Entity.ID))
+					if (det.DetonateState == DetonateState.PreDetonate)
 					{
-						//DT_Inferno entity is created on the same tick and after inferno_startburn
+						//DT_Inferno entity is created on the same tick as inferno_startburn, but parsed after
 						if (serverClass == infernoClass)
-							InterpDetonates.Enqueue((DetonateEntity)interpedDetonate);
+							InterpDetonates.Enqueue(det);
 
-						DetonateStarts[detEntity.Entity.ID] = ((DetonateEntity)interpedDetonate).NadeArgs;
-						interpedDetonate.EntityID = detEntity.Entity.ID;
+						DetonateEntities[ent.Entity.ID] = det;
+						det.EntityID = ent.Entity.ID;
 
-						detEntity.Entity.FindProperty("m_cellX").IntRecived += (s2, cell) =>
-						{
-							interpedDetonate.CellX = cell.Value;
-						};
-
-						detEntity.Entity.FindProperty("m_cellY").IntRecived += (s2, cell) =>
-						{
-							interpedDetonate.CellY = cell.Value;
-						};
-
-						detEntity.Entity.FindProperty("m_cellZ").IntRecived += (s2, cell) =>
-						{
-							interpedDetonate.CellZ = cell.Value;
-						};
-
-						detEntity.Entity.FindProperty("m_vecOrigin").VectorRecived += (s2, vector) =>
-						{
-							interpedDetonate.Origin = vector.Value;
-						};
+						ent.Entity.FindProperty("m_cellX").IntRecived += (s2, cell) => det.CellX = cell.Value;
+						ent.Entity.FindProperty("m_cellY").IntRecived += (s2, cell) => det.CellY = cell.Value;
+						ent.Entity.FindProperty("m_cellZ").IntRecived += (s2, cell) => det.CellZ = cell.Value;
+						ent.Entity.FindProperty("m_vecOrigin").VectorRecived += (s2, vector) => det.Origin = vector.Value;
 					}
 				};
 
-				serverClass.OnDestroyEntity += (s, detEntity) =>
+				serverClass.OnDestroyEntity += (s, ent) =>
 				{
-					// DetonateStart items get removed on detonate_end events,
+					// DetonateEntities get removed on detonate_end events,
 					// so the only ones left at this point are those that had no end triggered
-					if (DetonateStarts.ContainsKey(detEntity.Entity.ID))
-						PopDetonateStart(detEntity.Entity.ID);
+					if (DetonateEntities.ContainsKey(ent.Entity.ID))
+						PopDetonateEntity(ent.Entity.ID);
 				};
 			}
 		}
 
-		private void PopDetonateStart(int entID)
+		private void PopDetonateEntity(int entID)
 		{
-			var nadeArgs = DetonateStarts[entID];
+			var detEntity = DetonateEntities[entID];
 
-			// Would be nice if this could be done dynamically
-			if (nadeArgs is FireEventArgs)
+			if (detEntity.DetonateState == DetonateState.PreDetonate)
 			{
-				FireEventArgs newArgs = new FireEventArgs(nadeArgs);
-				newArgs.Interpolated = true;
-				RaiseFireEnd(newArgs);
+				// This happens when a player throws a grenade, but it never detonates.
+				// Either the round ended before detonation, or if it's a molotov it detonated in the sky.
+				DetonateEntities.Remove(entID);
+				return;
 			}
-			else if (nadeArgs is SmokeEventArgs)
-			{
-				SmokeEventArgs newArgs = new SmokeEventArgs(nadeArgs);
-				newArgs.Interpolated = true;
-				RaiseSmokeEnd(newArgs);
-			}
-			else if (nadeArgs is DecoyEventArgs)
-			{
-				DecoyEventArgs newArgs = new DecoyEventArgs(nadeArgs);
-				newArgs.Interpolated = true;
-				RaiseDecoyEnd(newArgs);
-			}
-			DetonateStarts.Remove(entID);
+
+			detEntity.CopyAndReplaceNadeArgs();
+			detEntity.NadeArgs.Interpolated = true;
+
+			detEntity.RaiseNadeEnd();
+
+			DetonateEntities.Remove(entID);
 		}
 
 		private void SetCellWidth()

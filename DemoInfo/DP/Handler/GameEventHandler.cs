@@ -232,42 +232,44 @@ namespace DemoInfo.DP.Handler
 				var decoyData = MapData(eventDescriptor, rawEvent);
 				var decoyArgs = FillNadeEvent<DecoyEventArgs>(decoyData, parser);
 				parser.RaiseDecoyStart(decoyArgs);
-				int decoyID = (int)decoyData["entityid"];
-				var idx = parser.DecoyPreStarts.FindIndex(d => d.Item1.EntityID == decoyID);
-				// if m_fFlags is on same tick as decoy_started, DecoyPreStarts won't have decoyID
-				if (idx != -1)
-					parser.DecoyPreStarts.RemoveAt(idx);
-				parser.DetonateStarts[decoyID] = decoyArgs;
+				var decoyEnt = parser.DetonateEntities[(int)decoyData["entityid"]];
+				decoyEnt.DetonateState = DetonateState.Detonating;
+				decoyEnt.NadeArgs = decoyArgs;
 				break;
 			case "decoy_detonate":
 				var decoyEndData = MapData(eventDescriptor, rawEvent);
 				parser.RaiseDecoyEnd(FillNadeEvent<DecoyEventArgs>(decoyEndData, parser));
-				parser.DetonateStarts.Remove((int)decoyEndData["entityid"]);
+				parser.DetonateEntities.Remove((int)decoyEndData["entityid"]);
 				break;
 			case "smokegrenade_detonate":
 				var smokeData = MapData(eventDescriptor, rawEvent);
 				var smokeArgs = FillNadeEvent<SmokeEventArgs>(smokeData, parser);
 				parser.RaiseSmokeStart(smokeArgs);
-				parser.DetonateStarts[(int)smokeData["entityid"]] = smokeArgs;
+				var smokeEnt = parser.DetonateEntities[(int)smokeData["entityid"]];
+				smokeEnt.DetonateState = DetonateState.Detonating;
+				smokeEnt.NadeArgs = smokeArgs;
 				break;
 			case "smokegrenade_expired":
 				var smokeEndData = MapData(eventDescriptor, rawEvent);
 				parser.RaiseSmokeEnd(FillNadeEvent<SmokeEventArgs>(smokeEndData, parser));
-				parser.DetonateStarts.Remove((int)smokeEndData["entityid"]);
+				parser.DetonateEntities.Remove((int)smokeEndData["entityid"]);
 				break;
 			case "inferno_startburn":
 				var fireData = MapData(eventDescriptor, rawEvent);
 				var fireArgs = FillNadeEvent<FireEventArgs>(fireData, parser);
-				parser.DetonateStarts[(int)fireData["entityid"]] = fireArgs;
+				var fireEnt = new FireDetonateEntity(parser);
+				parser.DetonateEntities[(int)fireData["entityid"]] = fireEnt;
+				fireEnt.NadeArgs = fireArgs;
+				fireEnt.DetonateState = DetonateState.Detonating;
 				parser.RaiseFireStart(fireArgs);
 				break;
 			case "inferno_expire":
 				var fireEndData = MapData(eventDescriptor, rawEvent);
 				var fireEndArgs = FillNadeEvent<FireEventArgs>(fireEndData, parser);
 				int endEntityID = (int)fireEndData["entityid"];
-				fireEndArgs.ThrownBy = parser.DetonateStarts[endEntityID].ThrownBy;
+				fireEndArgs.ThrownBy = parser.DetonateEntities[endEntityID].NadeArgs.ThrownBy;
 				parser.RaiseFireEnd(fireEndArgs);
-				parser.DetonateStarts.Remove(endEntityID);
+				parser.DetonateEntities.Remove(endEntityID);
 				break;
 				#endregion
 
@@ -422,6 +424,8 @@ namespace DemoInfo.DP.Handler
 			vec.Y = (float)data["y"];
 			vec.Z = (float)data["z"];
 			nade.Position = vec;
+
+			nade.Interpolated = false;
 
 			return nade;
 		}

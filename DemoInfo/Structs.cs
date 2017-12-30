@@ -159,7 +159,7 @@ namespace DemoInfo
 			}
 		}
 
-		DemoParser parser;
+		protected DemoParser parser;
 
 		public OwnedEntity(DemoParser parser)
 		{
@@ -167,21 +167,12 @@ namespace DemoInfo
 		}
 	}
 
+	enum DetonateState {PreDetonate, Detonating, Detonated}
+
 	abstract class DetonateEntity : OwnedEntity
 	{
 		internal NadeEventArgs NadeArgs;
-
-		internal DetonateEntity(DemoParser parser) : base(parser)
-		{
-
-		}
-
-		abstract internal void RaiseNadeEvent();
-	}
-
-	class DetonateEntity<T> : DetonateEntity where T : NadeEventArgs, new()
-	{
-		Action<T> Raise;
+		internal DetonateState DetonateState = DetonateState.PreDetonate;
 
 		// These properties keep NadeArgs current
 		override internal int? EntityID { get { return NadeArgs.EntityID; } set { NadeArgs.EntityID = value; } }
@@ -190,23 +181,86 @@ namespace DemoInfo
 
 		Vector _origin;
 
-		internal DetonateEntity(DemoParser parser, Action<T> raise) : base(parser)
+		internal DetonateEntity(DemoParser parser) : base(parser)
 		{
-			NadeArgs = new T();
+		}
+
+		abstract internal void RaiseNadeStart();
+		abstract internal void RaiseNadeEnd();
+		abstract internal void CopyAndReplaceNadeArgs(); // so that same args aren't raised for start and end
+	}
+
+	class FireDetonateEntity : DetonateEntity
+	{
+		internal FireDetonateEntity(DemoParser parser) : base(parser)
+		{
+			NadeArgs = new FireEventArgs();
 			NadeArgs.Interpolated = true;
-
-			Raise = raise;
 		}
 
-		internal DetonateEntity(DemoParser parser, Action<T> raise, T nadeArgs) : base(parser)
+		internal override void RaiseNadeStart()
 		{
-			NadeArgs = nadeArgs;
-			Raise = raise;
+			parser.RaiseFireWithOwnerStart((FireEventArgs)NadeArgs);
 		}
 
-		override internal void RaiseNadeEvent()
+		internal override void RaiseNadeEnd()
 		{
-			Raise((T)NadeArgs);
+			parser.RaiseFireEnd((FireEventArgs)NadeArgs);
+		}
+
+		internal override void CopyAndReplaceNadeArgs()
+		{
+			NadeArgs = new FireEventArgs(NadeArgs);
+		}
+	}
+
+	class SmokeDetonateEntity : DetonateEntity
+	{
+		internal SmokeDetonateEntity(DemoParser parser) : base(parser)
+		{
+			NadeArgs = new SmokeEventArgs();
+			NadeArgs.Interpolated = true;
+		}
+
+		internal override void RaiseNadeStart()
+		{
+			parser.RaiseSmokeStart((SmokeEventArgs)NadeArgs);
+		}
+
+		internal override void RaiseNadeEnd()
+		{
+			parser.RaiseSmokeEnd((SmokeEventArgs)NadeArgs);
+		}
+
+		internal override void CopyAndReplaceNadeArgs()
+		{
+			NadeArgs = new SmokeEventArgs(NadeArgs);
+		}
+	}
+
+	class DecoyDetonateEntity : DetonateEntity
+	{
+		internal float? FlagTime;
+
+		internal DecoyDetonateEntity(DemoParser parser) : base(parser)
+		{
+			NadeArgs = new DecoyEventArgs();
+			NadeArgs.Interpolated = true;
+		}
+
+		internal override void RaiseNadeStart()
+		{
+			parser.RaiseDecoyStart((DecoyEventArgs)NadeArgs);
+		}
+
+		internal override void RaiseNadeEnd()
+		{
+			parser.RaiseDecoyEnd((DecoyEventArgs)NadeArgs);
+		}
+
+		internal override void CopyAndReplaceNadeArgs()
+		{
+			NadeArgs = new DecoyEventArgs(NadeArgs);
 		}
 	}
 
