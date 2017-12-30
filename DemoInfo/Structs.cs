@@ -198,6 +198,12 @@ namespace DemoInfo
 			Raise = raise;
 		}
 
+		internal DetonateEntity(DemoParser parser, Action<T> raise, T nadeArgs) : base(parser)
+		{
+			NadeArgs = nadeArgs;
+			Raise = raise;
+		}
+
 		override internal void RaiseNadeEvent()
 		{
 			Raise((T)NadeArgs);

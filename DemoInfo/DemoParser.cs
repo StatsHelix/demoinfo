@@ -599,12 +599,6 @@ namespace DemoInfo
 				detonate.RaiseNadeEvent();
 			}
 
-			while (newBurns.Count > 0)
-			{
-				var fire = newBurns.Dequeue();
-				RaiseFireWithOwnerStart(fire);
-			}
-
 			if (FirstTickOfRound)
 			{
 				FirstTickOfRound = false;
@@ -1153,7 +1147,6 @@ namespace DemoInfo
 		}
 
 		internal Queue<DetonateEntity> InterpDetonates = new Queue<DetonateEntity>();
-		internal Queue<FireEventArgs> newBurns = new Queue<FireEventArgs>();
 		internal List<Tuple<DetonateEntity, int>> DecoyPreStarts = new List<Tuple<DetonateEntity, int>>();
 		internal Dictionary<int, NadeEventArgs> DetonateStarts = new Dictionary<int, NadeEventArgs>();
 		private void HandleDetonates()
@@ -1170,9 +1163,15 @@ namespace DemoInfo
 
 					if (serverClass == infernoClass)
 					{
-						interpedDetonate = new DetonateEntity<FireEventArgs>(this, RaiseFireWithOwnerStart);
 						if (DetonateStarts.ContainsKey(detEntity.Entity.ID))
-							newBurns.Enqueue((FireEventArgs)DetonateStarts[detEntity.Entity.ID]);
+						{
+							// inferno_startburn successfully triggered, but we still want to add owner
+							var nadeArgs = (FireEventArgs)DetonateStarts[detEntity.Entity.ID];
+							interpedDetonate = new DetonateEntity<FireEventArgs>(this, RaiseFireWithOwnerStart, nadeArgs);
+							InterpDetonates.Enqueue((DetonateEntity)interpedDetonate);
+						}
+						else
+							interpedDetonate = new DetonateEntity<FireEventArgs>(this, RaiseFireWithOwnerStart);
 					}
 					else if (serverClass == smokeClass)
 					{
