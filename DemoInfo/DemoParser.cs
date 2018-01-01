@@ -600,18 +600,28 @@ namespace DemoInfo
 			}
 
 			// It's possible for entities to be replaced without being destroyed
-			// I have only seen this happen when the replacing class is CBaseEntity
-			// So hopefully checking the name is sufficient
+			// It might be possible for an entity to be replaced by the same type of entity,
+			// but that hasn't been seen so far.  If such a case arises, I think the only way to differentiate
+			// two entities with the same id and same class would be to look at the seriesid,
+			// but that's not currently coded.
 			if (DetonateEntities.Count > 0)
 			{
 				List<int> badEntities = new List<int>();
-				foreach (int detKey in DetonateEntities.Keys)
+				foreach (var detEnt in DetonateEntities)
 				{
-					var ent = Entities[detKey];
+					var ent = Entities[detEnt.Key];
 					if (ent != null)
 					{
-						if (ent.ServerClass.Name == "CBaseEntity")
-							badEntities.Add(detKey);
+						string detClsName = "";
+						if (detEnt.Value is FireDetonateEntity)
+							detClsName = "CInferno";
+						else if (detEnt.Value is SmokeDetonateEntity)
+							detClsName = "CSmokeGrenadeProjectile";
+						else if (detEnt.Value is DecoyDetonateEntity)
+							detClsName = "CDecoyProjectile";
+
+						if (ent.ServerClass.Name != detClsName)
+							badEntities.Add(detEnt.Key);
 					}
 				}
 
