@@ -549,8 +549,6 @@ namespace DemoInfo
 			}
 		}
 
-		internal bool FirstTickOfRound = false;
-
 		/// <summary>
 		/// Parses the next tick of the demo.
 		/// </summary>
@@ -601,19 +599,24 @@ namespace DemoInfo
 				detonate.DetonateState = DetonateState.Detonating;
 			}
 
-			if (FirstTickOfRound)
+			// It's possible for entities to be replaced without being destroyed
+			// I have only seen this happen when the replacing class is CBaseEntity
+			// So hopefully checking the name is sufficient
+			if (DetonateEntities.Count > 0)
 			{
-				FirstTickOfRound = false;
-				if (DetonateEntities.Count > 0)
+				List<int> badEntities = new List<int>();
+				foreach (int detKey in DetonateEntities.Keys)
 				{
-					// Usually these entities get destroyed on the first tick of a new round,
-					// but sometimes they can be replaced by a new entity on this tick without
-					// the destroy ever being registered.
-					int[] detKeys = new int[DetonateEntities.Count];
-					DetonateEntities.Keys.CopyTo(detKeys, 0);
-					foreach (int entID in detKeys)
-						PopDetonateEntity(entID);
+					var ent = Entities[detKey];
+					if (ent != null)
+					{
+						if (ent.ServerClass.Name == "CBaseEntity")
+							badEntities.Add(detKey);
+					}
 				}
+
+				foreach (int k in badEntities)
+					PopDetonateEntity(k);
 			}
 
 			const int preStartThresh = 2;
@@ -1150,17 +1153,17 @@ namespace DemoInfo
 		internal Dictionary<int, DetonateEntity> DetonateEntities = new Dictionary<int, DetonateEntity>();
 		private void HandleDetonates()
 		{
-			var infernoClass = SendTableParser.FindByName("CInferno");
+			var infernoClass = SendTableParser.FindByName("CInferno"); // fire-making entity, not projectile
 			var smokeClass = SendTableParser.FindByName("CSmokeGrenadeProjectile");
 			var decoyClass = SendTableParser.FindByName("CDecoyProjectile");
-			ServerClass[] serverClasses = new ServerClass[3] {infernoClass, smokeClass, decoyClass};
-			foreach (var serverClass in serverClasses)
+			ServerClass[] projClasses = new ServerClass[3] {infernoClass, smokeClass, decoyClass};
+			foreach (var projClass in projClasses)
 			{
-				serverClass.OnNewEntity += (s, ent) =>
+				projClass.OnNewEntity += (s, ent) =>
 				{
 					DetonateEntity det;
 
-					if (serverClass == infernoClass)
+					if (projClass == infernoClass)
 					{
 						if (DetonateEntities.ContainsKey(ent.Entity.ID))
 						{
@@ -1171,7 +1174,7 @@ namespace DemoInfo
 						else
 							det = new FireDetonateEntity(this);
 					}
-					else if (serverClass == smokeClass)
+					else if (projClass == smokeClass)
 					{
 						det = new SmokeDetonateEntity(this);
 						ent.Entity.FindProperty("m_bDidSmokeEffect").IntRecived += (s2, smokeEffect) =>
@@ -1209,7 +1212,7 @@ namespace DemoInfo
 					if (det.DetonateState == DetonateState.PreDetonate)
 					{
 						//DT_Inferno entity is created on the same tick as inferno_startburn, but parsed after
-						if (serverClass == infernoClass)
+						if (projClass == infernoClass)
 							InterpDetonates.Enqueue(det);
 
 						DetonateEntities[ent.Entity.ID] = det;
@@ -1222,7 +1225,7 @@ namespace DemoInfo
 					}
 				};
 
-				serverClass.OnDestroyEntity += (s, ent) =>
+				projClass.OnDestroyEntity += (s, ent) =>
 				{
 					// DetonateEntities get removed on detonate_end events,
 					// so the only ones left at this point are those that had no end triggered

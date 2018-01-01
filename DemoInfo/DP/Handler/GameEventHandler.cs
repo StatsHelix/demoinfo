@@ -85,11 +85,7 @@ namespace DemoInfo.DP.Handler
 			}
 
 			if (eventDescriptor.Name == "round_officially_ended")
-			{
 				parser.RaiseRoundOfficiallyEnd();
-				parser.FirstTickOfRound = true;
-			}
-
 
 			if (eventDescriptor.Name == "round_mvp") {
 				data = MapData (eventDescriptor, rawEvent);

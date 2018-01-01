@@ -27,6 +27,8 @@ namespace DemoInfo.DT
 				OnNewEntity(this, new EntityCreatedEventArgs(this, e));
 		}
 
+		// On rare occasions entities are replaced rather than destroyed,
+		// in which case this event won't be raised
 		public event EventHandler<EntityDestroyedEventArgs> OnDestroyEntity;
 
 		internal void AnnounceDestroyedEntity(Entity e)
