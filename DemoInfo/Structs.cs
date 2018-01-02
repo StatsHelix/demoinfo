@@ -174,9 +174,17 @@ namespace DemoInfo
 		internal NadeEventArgs NadeArgs;
 		internal DetonateState DetonateState = DetonateState.PreDetonate;
 
-		// These properties keep NadeArgs current
+		// Necessary to use properties here so that NadeArgs is kept current
 		override internal int? EntityID { get { return NadeArgs.EntityID; } set { NadeArgs.EntityID = value; } }
-		override internal Vector Origin { get { return _origin; } set { _origin = value; NadeArgs.Position = Position; } } //not efficient, but the least bad option
+		override internal Vector Origin {
+			get { return _origin; }
+			set
+			{ // origin is always present in position updates
+				_origin = value;
+				if (NadeArgs.Interpolated)
+					NadeArgs.Position = Position;
+			}
+		}
 		override internal Player Owner { get { return NadeArgs.ThrownBy; } set { NadeArgs.ThrownBy = value; } }
 
 		Vector _origin;

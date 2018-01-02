@@ -421,8 +421,6 @@ namespace DemoInfo.DP.Handler
 			vec.Z = (float)data["z"];
 			nade.Position = vec;
 
-			nade.Interpolated = false;
-
 			return nade;
 		}
 

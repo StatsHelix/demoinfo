@@ -30,7 +30,6 @@ namespace DemoInfo
 		private const int MAX_COORD_INTEGER = 16384;
 		private int cellWidth;
 
-
 		#region Events
 		/// <summary>
 		/// Raised once when the Header of the demo is parsed

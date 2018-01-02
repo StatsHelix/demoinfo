@@ -125,12 +125,12 @@ namespace DemoInfo
 		public EquipmentElement NadeType { get; internal set; }
 		public Player ThrownBy { get; internal set; }
 
-		public int? EntityID;
-		public bool Interpolated = false;
+		public int? EntityID { get; internal set; }
+		public bool Interpolated { get; internal set; }
 
 		internal NadeEventArgs ()
 		{
-		
+			Interpolated = false;
 		}
 
 		internal NadeEventArgs (NadeEventArgs nadeArgs)
@@ -146,6 +146,7 @@ namespace DemoInfo
 		internal NadeEventArgs (EquipmentElement type)
 		{
 			this.NadeType = type;
+			Interpolated = false;
 		}
 	}
 
