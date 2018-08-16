@@ -4,7 +4,6 @@ This is a C#-Library that makes reading CS:GO-Demos and analyzing them easier.
 
 ![Travis CI results](https://travis-ci.org/EHVAG/demoinfo.svg?branch=master)
 
-We now have a fancy IRC-Channel. Join [#demoinfogo](http://webchat.quakenet.org/?channels=demoinfogo) on Quakenet. If no one is there, you might want to try [#dota2replay](http://webchat.quakenet.org/?channels=dota2ŕeplay), the parsing of demos is pretty similar between those two games (There are some differences in how the field-headers are stored in the packet-entites, however).
 
 ## nuget-package
 We now have an official nuget-package! See https://www.nuget.org/packages/DemoInfo/
