@@ -125,14 +125,28 @@ namespace DemoInfo
 		public EquipmentElement NadeType { get; internal set; }
 		public Player ThrownBy { get; internal set; }
 
+		public int? EntityID { get; internal set; }
+		public bool Interpolated { get; internal set; }
+
 		internal NadeEventArgs ()
 		{
-		
+			Interpolated = false;
+		}
+
+		internal NadeEventArgs (NadeEventArgs nadeArgs)
+		{
+			Position = nadeArgs.Position;
+			NadeType = nadeArgs.NadeType;
+			ThrownBy = nadeArgs.ThrownBy;
+
+			EntityID = nadeArgs.EntityID;
+			Interpolated = nadeArgs.Interpolated;
 		}
 
 		internal NadeEventArgs (EquipmentElement type)
 		{
 			this.NadeType = type;
+			Interpolated = false;
 		}
 	}
 
@@ -142,6 +156,11 @@ namespace DemoInfo
 		{
 			
 		}
+
+		public FireEventArgs (NadeEventArgs nadeArgs) : base(nadeArgs)
+		{
+
+		}
 	}
 	public class SmokeEventArgs : NadeEventArgs
 	{
@@ -149,12 +168,22 @@ namespace DemoInfo
 		{
 			
 		}
+
+		public SmokeEventArgs (NadeEventArgs nadeArgs) : base(nadeArgs)
+		{
+
+		}
 	}
 	public class DecoyEventArgs : NadeEventArgs
 	{
 		public DecoyEventArgs () : base(EquipmentElement.Decoy)
 		{
 			
+		}
+
+		public DecoyEventArgs (NadeEventArgs nadeArgs) : base(nadeArgs)
+		{
+
 		}
 	}
 	public class FlashEventArgs : NadeEventArgs
@@ -167,12 +196,22 @@ namespace DemoInfo
 		{
 
 		}
+
+		public FlashEventArgs (NadeEventArgs nadeArgs) : base(nadeArgs)
+		{
+
+		}
 	}
 	public class GrenadeEventArgs : NadeEventArgs
 	{
 		public GrenadeEventArgs () : base(EquipmentElement.HE)
 		{
 			
+		}
+
+		public GrenadeEventArgs (NadeEventArgs nadeArgs) : base(nadeArgs)
+		{
+
 		}
 	}
 
@@ -254,6 +293,8 @@ namespace DemoInfo
 		public Player Attacker { get; set; }
 
 		public float? FlashDuration { get; set; }
+
+		public int? ProjectileEntityID { get; set; }
 	}
 
 	public class PlayerBindEventArgs : EventArgs

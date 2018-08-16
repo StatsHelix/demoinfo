@@ -27,6 +27,8 @@ namespace DemoInfo
 		const int MAXPLAYERS = 64;
 		const int MAXWEAPONS = 64;
 
+		private const int MAX_COORD_INTEGER = 16384;
+		private int cellWidth;
 
 		#region Events
 		/// <summary>
@@ -421,12 +423,6 @@ namespace DemoInfo
 		/// </summary>
 		internal List<Player> GEH_BlindPlayers = new List<Player>();
 
-		/// <summary>
-		/// Holds inferno_startburn event args so they can be matched with player
-		/// </summary>
-		internal Queue<Tuple<int, FireEventArgs>> GEH_StartBurns = new Queue<Tuple<int, FireEventArgs>>();
-
-
 		// These could be Dictionary<int, RecordedPropertyUpdate[]>, but I was too lazy to
 		// define that class. Also: It doesn't matter anyways, we always have to cast.
 
@@ -596,10 +592,54 @@ namespace DemoInfo
 				}
 			}
 
-			while (GEH_StartBurns.Count > 0) {
-				var fireTup = GEH_StartBurns.Dequeue();
-				fireTup.Item2.ThrownBy = InfernoOwners[fireTup.Item1];
-				RaiseFireWithOwnerStart(fireTup.Item2);
+			while (InterpDetonates.Count > 0) {
+				var detonate = InterpDetonates.Dequeue();
+				detonate.RaiseNadeStart();
+				detonate.DetonateState = DetonateState.Detonating;
+			}
+
+			// It's possible for entities to be replaced without being destroyed
+			// It might be possible for an entity to be replaced by the same type of entity,
+			// but that hasn't been seen so far.  If such a case arises, I think the only way to differentiate
+			// two entities with the same id and same class would be to look at the seriesid,
+			// but that's not currently coded.
+			if (DetonateEntities.Count > 0)
+			{
+				List<int> badEntities = new List<int>();
+				foreach (var detEnt in DetonateEntities)
+				{
+					var ent = Entities[detEnt.Key];
+					if (ent != null)
+					{
+						string detClsName = "";
+						if (detEnt.Value is FireDetonateEntity)
+							detClsName = "CInferno";
+						else if (detEnt.Value is SmokeDetonateEntity)
+							detClsName = "CSmokeGrenadeProjectile";
+						else if (detEnt.Value is DecoyDetonateEntity)
+							detClsName = "CDecoyProjectile";
+
+						if (ent.ServerClass.Name != detClsName)
+							badEntities.Add(detEnt.Key);
+					}
+				}
+
+				foreach (int k in badEntities)
+					PopDetonateEntity(k);
+			}
+
+			const int preStartThresh = 2;
+			if (CurrentTick % 10 == 0)
+			{
+				foreach (var det in DetonateEntities.Values)
+				{
+					if (det is DecoyDetonateEntity &&
+						det.DetonateState == DetonateState.PreDetonate &&
+						CurrentTime - ((DecoyDetonateEntity)det).FlagTime > preStartThresh)
+					{
+						InterpDetonates.Enqueue(det);
+					}
+				}
 			}
 
 			if (b) {
@@ -697,7 +737,9 @@ namespace DemoInfo
 
 			HandleWeapons ();
 
-			HandleInfernos();
+			HandleDetonates();
+
+			SetCellWidth();
 		}
 
 		private void HandleTeamScores()
@@ -1116,23 +1158,131 @@ namespace DemoInfo
 
 		}
 
-		internal Dictionary<int, Player> InfernoOwners = new Dictionary<int, Player>();
-		private void HandleInfernos()
+		internal Queue<DetonateEntity> InterpDetonates = new Queue<DetonateEntity>();
+		internal Dictionary<int, DetonateEntity> DetonateEntities = new Dictionary<int, DetonateEntity>();
+		private void HandleDetonates()
 		{
-			var inferno = SendTableParser.FindByName("CInferno");
+			var infernoClass = SendTableParser.FindByName("CInferno"); // fire-making entity, not projectile
+			var smokeClass = SendTableParser.FindByName("CSmokeGrenadeProjectile");
+			var decoyClass = SendTableParser.FindByName("CDecoyProjectile");
+			ServerClass[] projClasses = new ServerClass[3] {infernoClass, smokeClass, decoyClass};
+			foreach (var projClass in projClasses)
+			{
+				projClass.OnNewEntity += (s, ent) =>
+				{
+					DetonateEntity det;
 
-			inferno.OnNewEntity += (s, infEntity) => {
-				infEntity.Entity.FindProperty("m_hOwnerEntity").IntRecived += (s2, handleID) => {
-					int playerEntityID = handleID.Value & INDEX_MASK;
-					if (playerEntityID < PlayerInformations.Length && PlayerInformations[playerEntityID - 1] != null)
-						InfernoOwners[infEntity.Entity.ID] = PlayerInformations[playerEntityID - 1];
+					if (projClass == infernoClass)
+					{
+						if (DetonateEntities.ContainsKey(ent.Entity.ID))
+						{
+							// inferno_startburn successfully triggered, but we still want to add owner
+							det = DetonateEntities[ent.Entity.ID];
+							InterpDetonates.Enqueue(det);
+						}
+						else
+							det = new FireDetonateEntity(this);
+					}
+					else if (projClass == smokeClass)
+					{
+						det = new SmokeDetonateEntity(this);
+						ent.Entity.FindProperty("m_bDidSmokeEffect").IntRecived += (s2, smokeEffect) =>
+						{
+							//m_bDidSmokeEffect happens on the same tick as smokegrenade_detonate
+							if (smokeEffect.Value == 1 && det.DetonateState == DetonateState.PreDetonate)
+								InterpDetonates.Enqueue(det);
+						};
+					}
+					else
+					{
+						det = new DecoyDetonateEntity(this);
+						ent.Entity.FindProperty("m_fFlags").IntRecived += (s2, flag) =>
+						{
+							// There doesn't seem to be any property that is tightly coupled with
+							// decoy_started events, but m_fFlags always occurs some time beforehand.
+							if (flag.Value == 1)
+							{
+								if (det.DetonateState == DetonateState.PreDetonate)
+								{
+									// It's possible, but rare, for m_fFlags to be set on the same tick as decoy_started
+									((DecoyDetonateEntity)det).FlagTime = CurrentTime;
+								}
+							}
+						};
+					}
+
+					ent.Entity.FindProperty("m_hOwnerEntity").IntRecived += (s2, handleID) =>
+					{
+						int playerEntityID = handleID.Value & INDEX_MASK;
+						if (playerEntityID < PlayerInformations.Length && PlayerInformations[playerEntityID - 1] != null)
+							DetonateEntities[ent.Entity.ID].NadeArgs.ThrownBy = PlayerInformations[playerEntityID - 1];
+					};
+
+					if (det.DetonateState == DetonateState.PreDetonate)
+					{
+						//DT_Inferno entity is created on the same tick as inferno_startburn, but parsed after
+						if (projClass == infernoClass)
+							InterpDetonates.Enqueue(det);
+
+						DetonateEntities[ent.Entity.ID] = det;
+						det.EntityID = ent.Entity.ID;
+
+						ent.Entity.FindProperty("m_cellX").IntRecived += (s2, cell) => det.CellX = cell.Value;
+						ent.Entity.FindProperty("m_cellY").IntRecived += (s2, cell) => det.CellY = cell.Value;
+						ent.Entity.FindProperty("m_cellZ").IntRecived += (s2, cell) => det.CellZ = cell.Value;
+						ent.Entity.FindProperty("m_vecOrigin").VectorRecived += (s2, vector) => det.Origin = vector.Value;
+					}
+				};
+
+				projClass.OnDestroyEntity += (s, ent) =>
+				{
+					// DetonateEntities get removed on detonate_end events,
+					// so the only ones left at this point are those that had no end triggered
+					if (DetonateEntities.ContainsKey(ent.Entity.ID))
+						PopDetonateEntity(ent.Entity.ID);
+				};
+			}
+		}
+
+		private void PopDetonateEntity(int entID)
+		{
+			var detEntity = DetonateEntities[entID];
+
+			if (detEntity.DetonateState == DetonateState.PreDetonate)
+			{
+				// This happens when a player throws a grenade, but it never detonates.
+				// Either the round ended before detonation, or if it's a molotov it detonated in the sky.
+				DetonateEntities.Remove(entID);
+				return;
+			}
+
+			detEntity.CopyAndReplaceNadeArgs();
+			detEntity.NadeArgs.Interpolated = true;
+
+			detEntity.RaiseNadeEnd();
+
+			DetonateEntities.Remove(entID);
+		}
+
+		private void SetCellWidth()
+		{
+			SendTableParser.FindByName("CBaseEntity").OnNewEntity += (s, baseEnt) =>
+			{
+				baseEnt.Entity.FindProperty("m_cellbits").IntRecived += (s2, bitnum) =>
+				{
+					cellWidth = 1 << bitnum.Value;
 				};
 			};
-
-			inferno.OnDestroyEntity += (s, infEntity) => {
-				InfernoOwners.Remove(infEntity.Entity.ID);
-			};
 		}
+
+		internal Vector CellsToCoords(int cellX, int cellY, int cellZ)
+		{
+			return new Vector(
+				cellX * cellWidth - MAX_COORD_INTEGER,
+				cellY * cellWidth - MAX_COORD_INTEGER,
+				cellZ * cellWidth - MAX_COORD_INTEGER);
+		}
+
 		#if SAVE_PROP_VALUES
 		[Obsolete("This method is only for debugging-purposes and shuld never be used in production, so you need to live with this warning.")]
 		public string DumpAllEntities()
