@@ -145,6 +145,8 @@ namespace DemoInfo.DP.Handler
 				kill.Assister = parser.Players.ContainsKey((int)data["assister"]) ? parser.Players[(int)data["assister"]] : null;
 				kill.Headshot = (bool)data["headshot"];
 				kill.Weapon = new Equipment((string)data["weapon"], (string)data["weapon_itemid"]);
+                if (data.ContainsKey("assistedflash"))
+                    kill.AssistedFlash = (bool)data["assistedflash"];    
 
 				if (kill.Killer != null && kill.Weapon.Class != EquipmentClass.Grenade
 						&& kill.Weapon.Weapon != EquipmentElement.Revolver
