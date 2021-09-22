@@ -1,3 +1,7 @@
+## Archived
+
+This project is archived, and no longer maintained. A more maintained version of this project can be found [e.g. here](https://github.com/akiver/CSGO-Demos-Manager/tree/master/demoinfo).
+
 # DemoInfo
 
 This is a C#-Library that makes reading CS:GO-Demos and analyzing them easier. 
