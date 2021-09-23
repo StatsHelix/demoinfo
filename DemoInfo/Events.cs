@@ -21,6 +21,10 @@ namespace DemoInfo
 	{
 	}
 
+	public class TimeFixedEventArgs : EventArgs
+	{
+	}
+
 	public class MatchStartedEventArgs : EventArgs
 	{
 	}

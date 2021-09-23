@@ -35,6 +35,16 @@ namespace DemoInfo
 		public event EventHandler<HeaderParsedEventArgs> HeaderParsed;
 
 		/// <summary>
+		/// Raised when header data is corrupted and timings are zero and null.
+		/// </summary>
+		public event EventHandler<HeaderParsedEventArgs> HeaderCorrupted;
+
+		/// <summary>
+		/// Raised when the time variables have been fixed for a demo with a corrupted header
+		/// </summary>
+		public event EventHandler<TimeFixedEventArgs> TimeFixed;
+
+		/// <summary>
 		/// Occurs when the match started, so when the "begin_new_match"-GameEvent is dropped. 
 		/// This usually right before the freezetime of the 1st round. Be careful, since the players
 		/// usually still have warmup-money when this drops.
@@ -260,6 +270,11 @@ namespace DemoInfo
 		public DemoHeader Header { get; private set; }
 
 		/// <summary>
+		/// True when header is corrupted
+		/// </summary>
+		public bool IsHeaderCorrupted { get; private set; }
+
+		/// <summary>
 		/// Gets the participants of this game
 		/// </summary>
 		/// <value>The participants.</value>
@@ -448,7 +463,7 @@ namespace DemoInfo
 		/// </summary>
 		/// <value>The tick rate.</value>
 		public float TickRate {
-			get { return this.Header.PlaybackFrames / this.Header.PlaybackTime; }
+			get { return IsHeaderCorrupted ? 1/_ticktime : this.Header.PlaybackFrames / this.Header.PlaybackTime; }
 		}
 
 		/// <summary>
@@ -456,8 +471,10 @@ namespace DemoInfo
 		/// </summary>
 		/// <value>The tick time.</value>
 		public float TickTime {
-			get { return this.Header.PlaybackTime / this.Header.PlaybackFrames; }
+			get { return IsHeaderCorrupted ? _ticktime : this.Header.PlaybackTime / this.Header.PlaybackFrames; }
 		}
+		private List<int> tickGaps = new List<int>();
+		private float _ticktime;
 
 		/// <summary>
 		/// Gets the parsing progess. 0 = beginning, ~1 = finished (it can actually be > 1, so be careful!)
@@ -473,6 +490,11 @@ namespace DemoInfo
 		/// </summary>
 		/// <value>The current tick.</value>
 		public int CurrentTick { get; private set; }
+
+		/// <summary>
+		/// The tickrate *of the server*
+		/// </summary>
+		public float TickInterval { get; internal set; }
 
 		/// <summary>
 		/// The current ingame-tick as reported by the demo-file. 
@@ -525,7 +547,18 @@ namespace DemoInfo
 				throw new InvalidDataException("Invalid Demo-Protocol");
 
 			Header = header;
+			IsHeaderCorrupted = (header.PlaybackTime == 0);
 
+			if (IsHeaderCorrupted)
+			{				
+				Console.WriteLine("WARNING: The header for this demo file is corrupted.  TickRate, TickTime, CurrentTime will be 0 for ticks at the start of the demo.  ParsingProgress, PlaybackFrames, PlaybackTicks, PlaybackTime will always be 0.");
+				Console.WriteLine("HeaderCorrupted event raised, TimeFixed event will be raised when time variables are repaired.");
+
+				if (HeaderCorrupted != null)
+				{
+					HeaderCorrupted(this, new HeaderParsedEventArgs(Header));
+				}
+			}
 
 			if (HeaderParsed != null)
 				HeaderParsed(this, new HeaderParsedEventArgs(Header));
@@ -552,6 +585,28 @@ namespace DemoInfo
 			}
 		}
 
+		private void FixTickTime()
+		{
+			// at the beginning of demos the tickgap can be erratic, so make sure we have 10 consecutive that are the same
+			int gap = tickGaps[1] - tickGaps[0];
+			bool isConsecutive = true;
+			for (int i = 1; i < tickGaps.Count - 1; i++) {
+				if (tickGaps[i + 1] - tickGaps[i] != gap)
+				{
+					tickGaps.Clear();
+					isConsecutive = false;
+					break;
+				}
+			}
+
+			if (isConsecutive) {
+				_ticktime = gap * TickInterval;
+
+				if (TimeFixed != null)
+					TimeFixed(this, new TimeFixedEventArgs());
+			}
+		}
+
 		/// <summary>
 		/// Parses the next tick of the demo.
 		/// </summary>
@@ -560,6 +615,15 @@ namespace DemoInfo
 		{
 			if (Header == null)
 				throw new InvalidOperationException ("You need to call ParseHeader first before you call ParseToEnd or ParseNextTick!");
+
+			if (IsHeaderCorrupted && _ticktime == 0 && IngameTick > 20) {
+				int consecutiveGaps = 10;
+				if (tickGaps.Count < consecutiveGaps)
+					tickGaps.Add(IngameTick);
+				else if (tickGaps.Count == consecutiveGaps)	{
+					FixTickTime();
+				}
+			}
 
 			bool b = ParseTick();
 			
@@ -1476,6 +1540,8 @@ namespace DemoInfo
 			this.FireNadeWithOwnerStarted = null;
 			this.FlashNadeExploded = null;
 			this.HeaderParsed = null;
+			this.HeaderCorrupted = null;
+			this.TimeFixed = null;
 			this.MatchStarted = null;
 			this.NadeReachedTarget = null;
 			this.PlayerKilled = null;
