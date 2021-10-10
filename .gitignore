@@ -232,3 +232,5 @@ $RECYCLE.BIN/
 
 # userprefs belong to the user
 *.userprefs
+
+.vs/
